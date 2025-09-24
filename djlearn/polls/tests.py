@@ -93,7 +93,3 @@ class QuestionVotingTests(TestCase):
         self.assertRedirects(response, reverse("polls:results", args=(past_question.id,)))
         past_question.choice_set.first().refresh_from_db()
         self.assertEqual(past_question.choice_set.first().votes, 1)
-
-class FailingTests(TestCase):
-    def test_fail_example(self):
-        self.assertEqual(1, 2)
