@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Poll Results</title>
+        <title>template</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         {% load static %}
@@ -9,13 +9,6 @@
         <script src="{% static 'polls/init.js' %}"></script>
     </head>
     <body>
-        <h1>Poll {{ question.id }} Results</h1>
-        <p>{{ question.question_text }}</p>
-        <ul>
-            {% for choice in results_list %}
-                <li>{{ choice.choice_text }}: {{ choice.votes }} votes</li>
-            {% endfor %}
-        </ul>
-        <footer></footer>
+        
     </body>
 </html>
