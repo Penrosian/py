@@ -1,11 +1,16 @@
-function checkLocalFile() {
-    const loc = window.location.href;
-    return loc.startsWith("file://") || loc.startsWith("http://localhost") || loc.startsWith("http://127.0.0.1");
-}
-
+let createdFooter = false;
 function init() {
     const loc = window.location.href;
     const isLocalFile = checkLocalFile();
+
+    // Create footer immediately if it doesn't exist, so that it doesn't just pop into existance once validation is complete
+    let footer = document.querySelector('footer');
+    if (!footer) {
+        footer = document.createElement('footer');
+        footer.innerHTML = `<p>Validating...</p>`;
+        document.body.appendChild(footer);
+        createdFooter = true;
+    }
 
     // Check if the document has a valid doctype
     let hasValidDoctype = checkDoctype();
@@ -17,39 +22,48 @@ function init() {
 
     if (isLocalFile) {
         // Local file case: Include the DOCTYPE manually if necessary
-        const pageContent = `<!DOCTYPE html>\n` + document.documentElement.outerHTML;
-
-        fetch("https://validator.w3.org/nu/?out=json", {
-            method: "POST",
-            headers: {
-                "Content-Type": "text/html; charset=utf-8"
-            },
-            body: pageContent
-        })
-        .then(response => response.json())
-        .then(data => {
-            renderValidationResults(data);
-        })
-        .catch(error => {
-            console.warn(error);
-            renderErrorFooter();
-        });
+        // I originally had document.documentElement.outerHTML here.
+        // That was returning the current DOM state, which has already been
+        // cleaned up by the browser. This version passes the raw local file.
+        fetch(window.location.href)
+            .then(response => response.text())
+            .then(rawContent => {
+                return fetch("https://validator.w3.org/nu/?out=json", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "text/html; charset=utf-8"
+                    },
+                    body: rawContent
+                });
+            })
+            .then(response => response.json())
+            .then(data => {
+                renderValidationResults(data);
+            })
+            .catch(error => {
+                console.warn(error);
+                renderErrorFooter();
+            });
 
     } else {
         // Hosted file case: Use URL-based validation
         fetch("https://validator.w3.org/nu/?out=json&doc=" + encodeURIComponent(loc), {
             method: "GET"
         })
-        .then(response => response.json())
-        .then(data => {
-            renderValidationResults(data);
-            console.log(data);
-        })
-        .catch((error, data) => {
-            console.warn(error);
-            renderErrorFooter();
-        });
+            .then(response => response.json())
+            .then(data => {
+                renderValidationResults(data);
+            })
+            .catch(error => {
+                console.warn(error);
+                renderErrorFooter();
+            });
     }
+}
+
+function checkLocalFile() {
+    const loc = window.location.href;
+    return loc.startsWith("file://") || loc.startsWith("http://localhost") || loc.startsWith("http://127.0.0.1");
 }
 
 // Function to check if the document has a valid <!DOCTYPE html>
@@ -63,16 +77,13 @@ function checkDoctype() {
 
 // Helper function to add a warning to the footer if <!DOCTYPE html> is missing
 function addWarningFooter() {
-    let footer = document.querySelector('footer');
-    if (!footer) {
-        footer = document.createElement('footer');
-        document.body.appendChild(footer);
-    }
-    footer.innerHTML += `<div id="doctype-warning"><p><strong>Warning: The document is missing a <!DOCTYPE html> declaration. Validation results may not be accurate.</strong></p></div>`;
+    renderFooter(`<div id="doctype-warning"><p><strong>Warning: The document is missing a <!DOCTYPE html> declaration. Validation results may not be accurate.</strong></p></div>`);
+    createdFooter = false;
 }
 
 // Helper function to render validation results
 function renderValidationResults(data) {
+    // console.log(data);
     let isHTMLValid = data.messages.length === 0;
 
     let ValidatorHTML = `<div id="htmlcss"><p><strong>HTML/CSS`;
@@ -80,115 +91,66 @@ function renderValidationResults(data) {
         ValidatorHTML += " NOT";
     }
     ValidatorHTML += ` Valid!</strong></p>`;
-    if(window.location.href.startsWith("file://")) {
-        if(window.location.href.split("/").length <= 8) {
-            ValidatorHTML += `
-            <p>
-                <a id="vLink1" href="https://validator.w3.org/check?uri=${window.location.href}">Validate HTML</a> |
-                <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a> |
-                <a id="vLink3" href="index.html">Go Back</a>
-            </p>
-        `;
-        } else {
-            ValidatorHTML += `
-            <p>
-                <a id="vLink1" href="https://validator.w3.org/check?uri=${window.location.href}">Validate HTML</a> |
-                <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a> | 
-                <a id="vLink3" href="../">Go Back</a>
-            </p>
-        `;
-        }
-    } else {
-        if(window.location.href.split("/").length <= 4) {
-            ValidatorHTML += `
-            <p>
-                <a id="vLink1" href="https://validator.w3.org/check?uri=${window.location.href}">Validate HTML</a> |
-                <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a> |
-                <a id="vLink3" href="index.html">Go Back</a>
-            </p>
-        `;
-        } else {
-            ValidatorHTML += `
-            <p>
-                <a id="vLink1" href="https://validator.w3.org/check?uri=${window.location.href}">Validate HTML</a> |
-                <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a> | 
-                <a id="vLink3" href="../">Go Back</a>
-            </p>
-        `;
-        }
-    }
-
-    if (checkLocalFile() && !isHTMLValid) {
-        if (data['messages'][0]['type'] != 'non-document-error') {
-            ValidatorHTML += `<p>There might be multiple errors. Here is the first one:</p>
-            <table>
-            <thead>
-            <tr>
-            <th>Code</th>
-            <th>Error Description</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-            <td><code>${data['messages'][0]['extract'].replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;')}</code></td>
-            <td>` + data['messages'][0]['message'] + `</td> 
-            </tr>
-            </tbody>
-            </table>`
-        } else if(data['messages'][0]['type'] == 'non-document-error') {
-            ValidatorHTML += `<p>Validation could not be performed due to an error: ` + data['messages'][0]['message'] + `</p>`;
+    ValidatorHTML += `
+        <p>
+            <a id="vLink1" href="https://validator.w3.org/check?uri=${window.location.href}">Validate HTML</a> |
+            <a id="vLink2" href="https://jigsaw.w3.org/css-validator/validator?uri=${window.location.href}?profile=css3">Validate CSS</a>
+        </p>
+    `;
+    if (!isHTMLValid) {
+        if (data['messages'][0]['type'] != 'error') {
+            if (checkLocalFile()) {
+                ValidatorHTML += `<p>Validation could not be performed due to an error: ` + data['messages'][0]['message'] + `</p>`;
+            } else {
+                console.warn(data['messages'][0]['message']);
+                renderErrorFooter();
+            }
+        } else if (checkLocalFile()) {
+            try {
+                ValidatorHTML += `<p>There might be multiple errors. Here is the first one:</p>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td><strong>Error Description</strong></td>
+                        </tr>
+                        <tr>
+                            <td>` + data['messages'][0]['message'] + `</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Code</strong></td>
+                        </tr>
+                        <tr>
+                        <td><code>${data['messages'][0]['extract'].replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;')}</code></td>
+                        </tr>
+                    </tbody>
+                </table>`;
+            } catch (error) {
+                ValidatorHTML += `<p>Validation could not be performed due to an error: ` + error.message + `</p>`;
+            }
         }
     }
 
+    renderFooter(ValidatorHTML);
+}
+
+function renderFooter(innerHTML) {
     let footer = document.querySelector('footer');
     if (!footer) {
         footer = document.createElement('footer');
         document.body.appendChild(footer);
     }
-    footer.innerHTML += ValidatorHTML;
+    if (createdFooter) footer.innerHTML = "";
+    footer.innerHTML += innerHTML;
 }
 
 // Helper function to render an error message in the footer
 function renderErrorFooter() {
-    let footer = document.querySelector('footer');
-    if (!footer) {
-        footer = document.createElement('footer');
-        document.body.appendChild(footer);
-    }
-    if(window.location.href.startsWith("file://")) {
-        if(window.location.href.split("/").length <= 8) {
-            footer.innerHTML += `
-            <div id="htmlcss">
-                <p><strong>HTML/CSS validation could not be performed due to an error.</strong></p>
-            </div>
-        `;
-        } else {
-            footer.innerHTML += `
-            <div id="htmlcss">
-                <p><strong>HTML/CSS validation could not be performed due to an error.</strong></p>
-                <a id="vLink3" href="../">Go Back</a>
-            </div>
-        `;
-        }
-    } else {
-        if(window.location.href.split("/").length <= 4) {
-            footer.innerHTML += `
-            <div id="htmlcss">
-                <p><strong>HTML/CSS validation could not be performed due to an error.</strong></p>
-            </div>
-        `;
-        } else {
-            footer.innerHTML += `
-            <div id="htmlcss">
-                <p><strong>HTML/CSS validation could not be performed due to an error.</strong></p>
-                <a id="vLink3" href="../">Go Back</a>
-            </div>
-        `;
-        }
-    }
+    renderFooter(`
+        <div id="htmlcss">
+            <p><strong>HTML/CSS validation could not be performed due to an error.</strong></p>
+        </div>
+        `);
 }
-
-
 
 // Call the init function when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', init);
