@@ -3,6 +3,7 @@ body {
     color: #c1cad2;
     font-family: "Roboto", sans-serif;
 }
+
 a {
     color: #44b78b;
 }
@@ -12,7 +13,7 @@ footer {
     margin: 0px;
     text-align: center;
     width: 100%;
-    height: 10%;
+    min-height: 10%;
     background-color: #161b22;
     border-top: 0.2vh solid #30363d;
     position: fixed;
