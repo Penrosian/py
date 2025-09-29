@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Todo</title>
+        {% load static %}
+        <link rel="stylesheet" type="text/css" href="{% static 'todo/styles.css' %}">
+        <script src="{% static 'todo/init.js' %}"></script>
+    </head>
+    <body>
+        <h1>Todo</h1>
+        <ul>
+        {% for user in user_list %}
+            <li><a href="{% url 'todo:user_todos' user.id %}">{{ user.username }}</a></li>
+        {% empty %}
+            <li>No users have todo items.</li>
+        {% endfor %}
+        </ul>
+    </body>
+</html>

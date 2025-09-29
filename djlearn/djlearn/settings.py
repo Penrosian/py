@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_polls.apps.PollsConfig',
+    'todo.apps.TodoConfig',
 ]
 
 MIDDLEWARE = [
