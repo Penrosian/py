@@ -18,11 +18,8 @@
                             console.log(xmlHttp.responseText);
                     }
                     xmlHttp.open("POST", "{% url 'todo:update' %}", true);
-                    xmlHttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-                    xmlHttp.send(JSON.stringify({
-                        csrfmiddlewaretoken: csrfToken,
-                        item_id: item_id,
-                    }));
+                    xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+                    xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&item_id=" + item_id);
                 }
         </script>
         {% csrf_token %}
