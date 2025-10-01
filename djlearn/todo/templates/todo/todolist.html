@@ -10,19 +10,21 @@
     </head>
     <body>
         <script>
+            // Django only expects POST and similar requests from forms. This leads to 2 weird issues.
+            // First, the csrf token is only supplied as a template of an input tag. This means the actual token needs to be extracted from this input tag.
             let csrfToken = '{{ csrf_token }}'.split('value=')[0];
             function updateItem(element, item_id) {
                     var xmlHttp = new XMLHttpRequest();
-                    xmlHttp.onreadystatechange = function() { 
+                    xmlHttp.onreadystatechange = () => { 
                         if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
                             element.innerText = element.innerText === '☐' ? '✔' : '☐';
                     }
                     xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                    // Second, it only checks for the csrf token in the form data, meaning everything has to be sent like it's a form.
                     xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
                     xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&item_id=" + item_id);
                 }
         </script>
-        {% csrf_token %}
         <h1>To-do list for {{ user.username }}</h1>
         <ul>
         {% for item in todo_list %}
@@ -37,7 +39,7 @@
             {% if item.name %}
             {{ item.name }}
             {% else %}
-             (No name)
+            (No name)
             {% endif %}
             {% if item.description != "empty" %}
                 <ul>
