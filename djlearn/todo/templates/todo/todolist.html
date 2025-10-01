@@ -11,11 +11,11 @@
     <body>
         <script>
             let csrfToken = '{{ csrf_token }}'.split('value=')[0];
-            function updateItem(item_id) {
+            function updateItem(element, item_id) {
                     var xmlHttp = new XMLHttpRequest();
                     xmlHttp.onreadystatechange = function() { 
                         if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-                            console.log(xmlHttp.responseText);
+                            element.innerText = element.innerText === '☐' ? '✔' : '☐';
                     }
                     xmlHttp.open("POST", "{% url 'todo:update' %}", true);
                     xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
@@ -27,7 +27,7 @@
         <ul>
         {% for item in todo_list %}
         <li>
-            <button onclick="updateItem({{ item.id }})">
+            <button onclick="updateItem(this, {{ item.id }})">
                 {% if item.completed %}
                     ✔
                 {% else %}
