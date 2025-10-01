@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>To-do list</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        {% load static %}
+        <link rel="stylesheet" type="text/css" href="{% static 'todo/styles.css' %}">
+        <script src="{% static 'todo/init.js' %}"></script>
+    </head>
+    <body>
+        <script>
+            let csrfToken = '{{ csrf_token }}'.split('value=')[0];
+            function updateItem(item_id) {
+                    var xmlHttp = new XMLHttpRequest();
+                    xmlHttp.onreadystatechange = function() { 
+                        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                            console.log(xmlHttp.responseText);
+                    }
+                    xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                    xmlHttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                    xmlHttp.send(JSON.stringify({
+                        csrfmiddlewaretoken: csrfToken,
+                        item_id: item_id,
+                    }));
+                }
+        </script>
+        {% csrf_token %}
+        <h1>To-do list for {{ user.username }}</h1>
+        <ul>
+        {% for item in todo_list %}
+        <li>
+            <button onclick="updateItem({{ item.id }})">
+                {% if item.completed %}
+                    ✔
+                {% else %}
+                    ☐
+                {% endif %}
+            </button>
+            {% if item.name %}
+            {{ item.name }}
+            {% else %}
+             (No name)
+            {% endif %}
+            {% if item.description != "empty" %}
+                <ul>
+                    <li>- {{ item.description }}</li>
+                </ul>
+            {% endif %}
+        </li>
+        {% empty %}
+            <li>No to-do items found.</li>
+        {% endfor %}
+        </ul>
+        <a href="{% url 'todo:index' %}">Back to user list</a>
+    </body>
+</html>
