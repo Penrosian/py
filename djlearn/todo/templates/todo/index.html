@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Todo</title>
+        <title>To-do Lists</title>
         {% load static %}
         <link rel="stylesheet" type="text/css" href="{% static 'todo/styles.css' %}">
         <script src="{% static 'todo/init.js' %}"></script>
@@ -39,7 +39,7 @@
                 xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=addUser&username=" + username);
             }
         </script>
-        <h1>Todo</h1>
+        <h1>To-do Lists</h1>
         <ul>
         {% for user in user_list %}
             <li><a href="{% url 'todo:todolist' user.id %}">{{ user.username }}</a></li>
