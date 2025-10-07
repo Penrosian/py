@@ -10,8 +10,6 @@
     </head>
     <body>
         <script>
-            // Django only expects POST and similar requests from forms. This leads to 2 weird issues.
-            // First, the csrf token is only supplied as a template of an input tag. This means the actual token needs to be extracted from this input tag.
             let csrfToken = '{{ csrf_token }}'.split('value=')[0];
             function updateItem(element, item_id) {
                 var xmlHttp = new XMLHttpRequest();
@@ -19,10 +17,9 @@
                     if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
                         element.innerText = element.innerText === '☐' ? '✔' : '☐';
                 }
-                xmlHttp.open("PATCH", "{% url 'todo:update' %}", true);
-                // Second, it only checks for the csrf token in the form data, meaning everything has to be sent like it's a form.
+                xmlHttp.open("POST", "{% url 'todo:update' %}", true);
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&item_id=" + item_id);
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=toggle&item_id=" + item_id);
             }
         </script>
         <h1>To-do list for {{ user.username }}</h1>
@@ -43,7 +40,7 @@
             {% endif %}
             {% if item.description != "empty" %}
                 <ul>
-                    <li>- {{ item.description }}</li>
+                    <li>{{ item.description }}</li>
                 </ul>
             {% endif %}
         </li>
@@ -51,6 +48,8 @@
             <li>No to-do items found.</li>
         {% endfor %}
         </ul>
+        <a href="{% url 'todo:user' user.id %}">Edit to-do list</a>
+        <br>
         <a href="{% url 'todo:index' %}">Back to user list</a>
     </body>
 </html>

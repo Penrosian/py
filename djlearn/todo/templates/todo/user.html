@@ -10,51 +10,114 @@
     </head>
     <body>
         <script>
-            // Django only expects POST and similar requests from forms. This leads to 2 weird issues.
-            // First, the csrf token is only supplied as a template of an input tag. This means the actual token needs to be extracted from this input tag.
             let csrfToken = '{{ csrf_token }}'.split('value=')[0];
-            function deleteItem(element, item_id) {
+            function deleteItem(item_id) {
                 var xmlHttp = new XMLHttpRequest();
                 xmlHttp.onreadystatechange = () => {
                     if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-                        element.innerText = element.innerText === '☐' ? '✔' : '☐';
-                }
-                xmlHttp.open("DELETE", "{% url 'todo:update' %}", true);
-                // Second, it only checks for the csrf token in the form data, meaning everything has to be sent like it's a form.
-                xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&item_id=" + item_id);
-            }
-            function addItem(element) {
-                var xmlHttp = new XMLHttpRequest();
-                xmlHttp.onreadystatechange = () => {
-                    if (xmlHttp.readyState == 4)
-                        element.innerText = xmlHttp.responseText;
+                        location.reload();
                 }
                 xmlHttp.open("POST", "{% url 'todo:update' %}", true);
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&method=add" + "&user_id=" + {{ user.id }} + "&name=" + encodeURIComponent(document.getElementById('name').value) + "&description=" + encodeURIComponent(document.getElementById('description').value));
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=delete" + "&item_id=" + item_id);
             }
-            function editItem(element, item_id) {
+            function reset() {
+                try {
+                    document.getElementById('name').remove();
+                    document.getElementById('description').remove();
+                    document.getElementById('submitButton').remove();
+                    document.getElementById('deleteButton').remove();
+                } catch {}
+            }
+            function startAddItem() {
+                reset();
+                let nameInput = document.createElement("input");
+                nameInput.type = "text";
+                nameInput.id = "name";
+                nameInput.placeholder = "Name";
+                let descriptionInput = document.createElement("input");
+                descriptionInput.type = "text";
+                descriptionInput.id = "description";
+                descriptionInput.placeholder = "Description";
+                let submitButton = document.createElement("button");
+                submitButton.innerText = "Add item";
+                submitButton.id = "submitButton";
+                submitButton.onclick = addItem;
+                document.getElementById("fieldset").appendChild(nameInput);
+                document.getElementById("fieldset").appendChild(descriptionInput);
+                document.getElementById("fieldset").appendChild(submitButton);
+            }
+            function addItem() {
                 var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open("POST", "{% url 'todo:update' %}", true);
                 xmlHttp.onreadystatechange = () => {
-                    if (xmlHttp.readyState == 4)
-                        element.innerText = xmlHttp.responseText;
+                    if (xmlHttp.readyState == 4 && xmlHttp.status == 201)
+                        location.reload();
                 }
-                xmlHttp.open("PATCH", "{% url 'todo:update' %}", true);
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&item_id=" + item_id + "&name=" + encodeURIComponent(document.getElementById('name').value) + "&description=" + encodeURIComponent(document.getElementById('description').value));
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=add&user_id=" + {{ user.id }} + "&name=" + encodeURIComponent(document.getElementById('name').value) + "&description=" + encodeURIComponent(document.getElementById('description').value));
+            }
+            function startEditItem(item_id) {
+                reset();
+                let nameInput = document.createElement("input");
+                nameInput.type = "text";
+                nameInput.id = "name";
+                nameInput.placeholder = "Name";
+                let descriptionInput = document.createElement("input");
+                descriptionInput.type = "text";
+                descriptionInput.id = "description";
+                descriptionInput.placeholder = "Description";
+                let submitButton = document.createElement("button");
+                submitButton.innerText = "Submit changes";
+                submitButton.id = "submitButton";
+                submitButton.onclick = () => editItem(item_id);
+                let deleteButton = document.createElement("button");
+                deleteButton.innerText = "Delete item";
+                deleteButton.id = "deleteButton";
+                deleteButton.onclick = () => deleteItem(item_id);
+                document.getElementById("fieldset").appendChild(nameInput);
+                document.getElementById("fieldset").appendChild(descriptionInput);
+                document.getElementById("fieldset").appendChild(submitButton);
+                document.getElementById("fieldset").appendChild(deleteButton);
+            }
+            function editItem(item_id) {
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                xmlHttp.onreadystatechange = () => {
+                    if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                        location.reload();
+                }
+                xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+                let name = document.getElementById('name').value;
+                let description = document.getElementById('description').value;
+                if (name === "") {
+                    name = "empty";
+                }
+                if (description === "") {
+                    description = "empty";
+                }
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=edit&item_id=" + item_id + "&name=" + encodeURIComponent(name) + "&description=" + encodeURIComponent(description));
+                document.getElementById('name').remove();
+                document.getElementById('description').remove();
+                document.getElementById('submitButton').remove();
+                document.getElementById('deleteButton').remove();
             }
         </script>
         <h1>Edit to-do list for {{ user.username }}</h1>
         <ul>
         {% for item in user.todoitem_set.all %} 
-        <li>
-            
-        </li>
+            <li>
+                <button onclick="startEditItem({{ item.id }})">Edit</button>
+                {{ item.name }} - {{ item.description }}
+            </li>
         {% empty %}
             <li>No to-do items found.</li>
         {% endfor %}
         </ul>
+        <button onclick="startAddItem()">Add item</button>
+        <br>
+        <div id="fieldset"></div>
+        <br>
         <a href="{% url 'todo:index' %}">Back to user list</a>
     </body>
 </html>

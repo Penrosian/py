@@ -11,7 +11,7 @@ class IndexView(generic.ListView):
     context_object_name = 'user_list'
 
     def get_queryset(self):
-        return User.objects.filter(todoitem__isnull=False).order_by('username')
+        return User.objects.order_by('username')
 
 def todolist(request, pk):
     user = get_object_or_404(User, pk=pk)
@@ -19,23 +19,24 @@ def todolist(request, pk):
     return render(request, 'todo/todolist.html', {'user': user, 'todo_list': todo_items})
     
 def update(request):
-    if request.method == 'PATCH':
-        if request.PATCH.get('action') == 'toggle':
+    # CSRF validation does not like any methods that aren't POST, so I just use that instead.
+    if request.method == 'POST':
+        if request.POST.get('action') == 'toggle':
             try:
-                item_id = int(request.PATCH['item_id'])
+                item_id = int(request.POST['item_id'])
                 item = get_object_or_404(TodoItem, pk=item_id)
                 item.completed = not item.completed
                 item.save()
                 return HttpResponse("Item updated successfully", status=200)
             except (KeyError, ValueError):
                 return HttpResponse("Invalid item ID", status=400)
-        elif request.PATCH.get('action') == 'edit':
+        elif request.POST.get('action') == 'edit':
             try:
-                item_id = int(request.PATCH['item_id'])
-                if request.PATCH.get('name'):
-                    new_name = request.PATCH['name']
-                if request.PATCH.get('description'):
-                    new_description = request.PATCH['description']
+                item_id = int(request.POST['item_id'])
+                if request.POST.get('name'):
+                    new_name = request.POST['name']
+                if request.POST.get('description'):
+                    new_description = request.POST['description']
                 item = get_object_or_404(TodoItem, pk=item_id)
                 if new_name:
                     item.name = new_name
@@ -45,26 +46,27 @@ def update(request):
                 return HttpResponse("Item edited successfully", status=200)
             except (KeyError, ValueError):
                 return HttpResponse("Invalid data provided", status=400)
+        elif request.POST.get('action') == 'add':
+            try:
+                user_id = int(request.POST['user_id'])
+                name = request.POST['name']
+                description = request.POST['description']
+                user = get_object_or_404(User, pk=user_id)
+                new_item = TodoItem(user=user, name=name, description=description, completed=False)
+                new_item.save()
+                return HttpResponse("Item added successfully", status=201)
+            except (KeyError, ValueError):
+                return HttpResponse("Invalid data provided", status=400)
+        elif request.POST.get('action') == 'delete':
+            try:
+                item_id = int(request.POST['item_id'])
+                item = get_object_or_404(TodoItem, pk=item_id)
+                item.delete()
+                return HttpResponse("Item deleted successfully", status=200)
+            except (KeyError, ValueError):
+                return HttpResponse("Invalid item ID", status=400)
         else:
             return HttpResponse("Invalid action", status=400)
-    elif request.method == 'POST':
-        try:
-            user_id = int(request.POST['user_id'])
-            name = request.POST['name']
-            description = request.POST['description']
-            user = get_object_or_404(User, pk=user_id)
-            new_item = TodoItem.objects.create(user=user, name=name, description=description, completed=False)
-            return HttpResponse(f"Item '{new_item.name}' added successfully", status=201)
-        except (KeyError, ValueError):
-            return HttpResponse("Invalid data provided", status=400)
-    elif request.method == 'DELETE':
-        try:
-            item_id = int(request.DELETE['item_id'])
-            item = get_object_or_404(TodoItem, pk=item_id)
-            item.delete()
-            return HttpResponse("Item deleted successfully", status=200)
-        except (KeyError, ValueError):
-            return HttpResponse("Invalid item ID", status=400)
     else:
         return HttpResponse("Method Not Allowed: " + request.method, status=405)
 
