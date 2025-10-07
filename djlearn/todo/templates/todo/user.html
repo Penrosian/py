@@ -12,6 +12,7 @@
         <script>
             let csrfToken = '{{ csrf_token }}'.split('value=')[0];
             function deleteItem(item_id) {
+                if (!confirm("Delete item?")) return;
                 var xmlHttp = new XMLHttpRequest();
                 xmlHttp.onreadystatechange = () => {
                     if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
