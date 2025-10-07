@@ -6,12 +6,8 @@ from .models import User, TodoItem
 
 # Create your views here.
 
-class IndexView(generic.ListView):
-    template_name = 'todo/index.html'
-    context_object_name = 'user_list'
-
-    def get_queryset(self):
-        return User.objects.order_by('username')
+def index(request):
+    return render(request, 'todo/index.html', {'user_list': User.objects.order_by('username')})
 
 def todolist(request, pk):
     user = get_object_or_404(User, pk=pk)
@@ -21,7 +17,8 @@ def todolist(request, pk):
 def update(request):
     # CSRF validation does not like any methods that aren't POST, so I just use that instead.
     if request.method == 'POST':
-        if request.POST.get('action') == 'toggle':
+        action = request.POST.get('action')
+        if action == 'toggle':
             try:
                 item_id = int(request.POST['item_id'])
                 item = get_object_or_404(TodoItem, pk=item_id)
@@ -30,7 +27,7 @@ def update(request):
                 return HttpResponse("Item updated successfully", status=200)
             except (KeyError, ValueError):
                 return HttpResponse("Invalid item ID", status=400)
-        elif request.POST.get('action') == 'edit':
+        elif action == 'edit':
             try:
                 item_id = int(request.POST['item_id'])
                 if request.POST.get('name'):
@@ -46,7 +43,7 @@ def update(request):
                 return HttpResponse("Item edited successfully", status=200)
             except (KeyError, ValueError):
                 return HttpResponse("Invalid data provided", status=400)
-        elif request.POST.get('action') == 'add':
+        elif action == 'add':
             try:
                 user_id = int(request.POST['user_id'])
                 name = request.POST['name']
@@ -57,7 +54,7 @@ def update(request):
                 return HttpResponse("Item added successfully", status=201)
             except (KeyError, ValueError):
                 return HttpResponse("Invalid data provided", status=400)
-        elif request.POST.get('action') == 'delete':
+        elif action == 'delete':
             try:
                 item_id = int(request.POST['item_id'])
                 item = get_object_or_404(TodoItem, pk=item_id)
@@ -65,6 +62,11 @@ def update(request):
                 return HttpResponse("Item deleted successfully", status=200)
             except (KeyError, ValueError):
                 return HttpResponse("Invalid item ID", status=400)
+        elif action == 'addUser':
+            username = request.POST['username']
+            new_user = User(username=username)
+            new_user.save()
+            return HttpResponse("User created successfully", status=201)
         else:
             return HttpResponse("Invalid action", status=400)
     else:

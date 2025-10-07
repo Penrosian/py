@@ -19,7 +19,7 @@
                 }
                 xmlHttp.open("POST", "{% url 'todo:update' %}", true);
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=delete" + "&item_id=" + item_id);
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=delete&item_id=" + item_id);
             }
             function reset() {
                 try {
@@ -54,8 +54,16 @@
                     if (xmlHttp.readyState == 4 && xmlHttp.status == 201)
                         location.reload();
                 }
+                let name = document.getElementById('name').value;
+                let description = document.getElementById('description').value;
+                if (name === "") {
+                    name = "empty";
+                }
+                if (description === "") {
+                    description = "empty";
+                }
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=add&user_id=" + {{ user.id }} + "&name=" + encodeURIComponent(document.getElementById('name').value) + "&description=" + encodeURIComponent(document.getElementById('description').value));
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=add&user_id=" + {{ user.id }} + "&name=" + name + "&description=" + description);
             }
             function startEditItem(item_id) {
                 reset();
@@ -96,7 +104,7 @@
                 if (description === "") {
                     description = "empty";
                 }
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=edit&item_id=" + item_id + "&name=" + encodeURIComponent(name) + "&description=" + encodeURIComponent(description));
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=edit&item_id=" + item_id + "&name=" + name + "&description=" + description);
                 document.getElementById('name').remove();
                 document.getElementById('description').remove();
                 document.getElementById('submitButton').remove();

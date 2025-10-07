@@ -9,6 +9,36 @@
         <script src="{% static 'todo/init.js' %}"></script>
     </head>
     <body>
+        <script>
+            let csrfToken = '{{ csrf_token }}'.split('value=')[0];
+            function startAddUser() {
+                try {
+                    document.getElementById("userInput").remove();
+                } catch {}
+                let userInput = document.createElement("input");
+                userInput.id = "userInput";
+                userInput.placeholder = "Username";
+                userInput.type = "text";
+                let submitButton = document.createElement("Button");
+                submitButton.id = "submitButton";
+                submitButton.innerText = "Add";
+                submitButton.onclick = () => addUser();
+                document.body.appendChild(userInput);
+                document.body.appendChild(submitButton);
+            }
+            function addUser() {
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open("POST", "{% url 'todo:update' %}");
+                xmlHttp.onreadystatechange = () => {
+                    if (xmlHttp.readyState === 4 && xmlHttp.status === 201) 
+                        location.reload();
+                }
+                let username = document.getElementById("userInput").value
+                if (username == "") return;
+                xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=addUser&username=" + username);
+            }
+        </script>
         <h1>Todo</h1>
         <ul>
         {% for user in user_list %}
@@ -17,5 +47,6 @@
             <li>No users have todo items.</li>
         {% endfor %}
         </ul>
+        <button onclick="startAddUser()">Add User</button>
     </body>
 </html>
