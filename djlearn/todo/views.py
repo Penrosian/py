@@ -1,7 +1,6 @@
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
-from django.views import generic
-from django.utils import timezone
+from django.urls import reverse
 from .models import User, TodoItem
 
 # Create your views here.
@@ -63,10 +62,21 @@ def update(request):
             except (KeyError, ValueError):
                 return HttpResponse("Invalid item ID", status=400)
         elif action == 'addUser':
-            username = request.POST['username']
-            new_user = User(username=username)
-            new_user.save()
-            return HttpResponse("User created successfully", status=201)
+            try:
+                username = request.POST['username']
+                new_user = User(username=username)
+                new_user.save()
+                return HttpResponse("User created successfully", status=201)
+            except (KeyError, ValueError):
+                return HttpResponse("Invalid data provided", status=400)
+        elif action == 'deleteUser':
+            try:
+                user_id = int(request.POST['user_id'])
+                user = get_object_or_404(User, pk=user_id)
+                user.delete()
+                return HttpResponseRedirect(reverse('todo:index'))
+            except (KeyError, ValueError):
+                return HttpResponse("Invalid user ID", status=400)
         else:
             return HttpResponse("Invalid action", status=400)
     else:
