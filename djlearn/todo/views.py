@@ -1,7 +1,7 @@
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
-from .models import User, TodoItem
+from .models import User, TodoItem, Team
 
 # Create your views here.
 
@@ -11,10 +11,22 @@ def index(request):
 def todolist(request, pk):
     user = get_object_or_404(User, pk=pk)
     todo_items = user.todoitem_set.order_by('id')
-    return render(request, 'todo/todolist.html', {'user': user, 'todo_list': todo_items})
+    categories = Team.objects.filter(members=user).order_by('name')
+    if categories.exists():
+        categorized = []
+        for category in categories:
+            items_in_category = todo_items.filter(category=category)
+            if items_in_category.exists():
+                categorized.append({'name': category.name, 'todo_items': items_in_category, 'modify': True})
+        uncategorized_items = todo_items.filter(category__isnull=True)
+        if uncategorized_items.exists():
+            categorized.append({'name': 'Uncategorized', 'todo_items': uncategorized_items, 'modify': True})
+        return render(request, 'todo/todolist.html', {'user': user, 'categories': categorized})
+    else:
+        return render(request, 'todo/todolist.html', {'user': user, 'categories': [{'name': 'Uncategorized', 'todo_items': todo_items, 'modify': True}]})
     
 def update(request):
-    # CSRF validation does not like any methods that aren't POST, so I just use that instead.
+    # CSRF validation does not like any methods that aren't POST, so I just use that for everything
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'toggle':
@@ -29,15 +41,9 @@ def update(request):
         elif action == 'edit':
             try:
                 item_id = int(request.POST['item_id'])
-                if request.POST.get('name'):
-                    new_name = request.POST['name']
-                if request.POST.get('description'):
-                    new_description = request.POST['description']
                 item = get_object_or_404(TodoItem, pk=item_id)
-                if new_name:
-                    item.name = new_name
-                if new_description:
-                    item.description = new_description
+                item.name = request.POST['name']
+                item.description = request.POST['description']
                 item.save()
                 return HttpResponse("Item edited successfully", status=200)
             except (KeyError, ValueError):
@@ -47,8 +53,9 @@ def update(request):
                 user_id = int(request.POST['user_id'])
                 name = request.POST['name']
                 description = request.POST['description']
+                category_id = request.POST['category_id']
                 user = get_object_or_404(User, pk=user_id)
-                new_item = TodoItem(user=user, name=name, description=description, completed=False)
+                new_item = TodoItem(user=user, name=name, description=description, completed=False, assigned=False, category=Team.objects.get(pk=category_id) if category_id != '-1' else None)
                 new_item.save()
                 return HttpResponse("Item added successfully", status=201)
             except (KeyError, ValueError):
@@ -77,11 +84,132 @@ def update(request):
                 return HttpResponseRedirect(reverse('todo:index'))
             except (KeyError, ValueError):
                 return HttpResponse("Invalid user ID", status=400)
+        elif action == 'addFriend':
+            try:
+                user_id = int(request.POST['user_id'])
+                user = get_object_or_404(User, pk=user_id)
+                friend_name = request.POST['friend_id']
+                friend = get_object_or_404(User, username=friend_name)
+                if friend == user:
+                    return HttpResponse("Cannot add yourself as a friend", status=400)
+                if friend in user.friends.all():
+                    return HttpResponse("Already friends", status=400)
+                if user in friend.friend_requests.all():
+                    return HttpResponse("Friend request already sent", status=400)
+                friend.friend_requests.add(user)
+                friend.save()
+                return HttpResponse("Friend request sent", status=201)
+            except (KeyError, ValueError):
+                return HttpResponse("Invalid data provided", status=400)
+        elif action == 'acceptFriend':
+            try:
+                user_id = int(request.POST['user_id'])
+                user = get_object_or_404(User, pk=user_id)
+                friend_id = int(request.POST['friend_id'])
+                friend = get_object_or_404(User, pk=friend_id)
+                if friend not in user.friend_requests.all():
+                    return HttpResponse("No friend request from this user", status=400)
+                user.friends.add(friend)
+                user.friend_requests.remove(friend)
+                user.save()
+                return HttpResponse("Friend request accepted", status=200)
+            except (KeyError, ValueError):
+                return HttpResponse("Invalid data provided", status=400)
+        elif action == 'removeFriend':
+            try:
+                user_id = int(request.POST['user_id'])
+                user = get_object_or_404(User, pk=user_id)
+                friend_id = int(request.POST['friend_id'])
+                friend = get_object_or_404(User, pk=friend_id)
+                if friend not in user.friends.all():
+                    return HttpResponse("Not friends with this user", status=400)
+                user.friends.remove(friend)
+                user.save()
+                return HttpResponse("Friend removed", status=200)
+            except (KeyError, ValueError):
+                return HttpResponse("Invalid data provided", status=400)
+        elif action == 'declineFriend':
+            try:
+                user_id = int(request.POST['user_id'])
+                user = get_object_or_404(User, pk=user_id)
+                friend_id = int(request.POST['friend_id'])
+                friend = get_object_or_404(User, pk=friend_id)
+                if friend not in user.friend_requests.all():
+                    return HttpResponse("No friend request from this user", status=400)
+                user.friend_requests.remove(friend)
+                user.save()
+                return HttpResponse("Friend request declined", status=200)
+            except (KeyError, ValueError):
+                return HttpResponse("Invalid data provided", status=400)
+        elif action == 'cancelFriendRequest':
+            try:
+                user_id = int(request.POST['user_id'])
+                user = get_object_or_404(User, pk=user_id)
+                friend_id = int(request.POST['friend_id'])
+                friend = get_object_or_404(User, pk=friend_id)
+                if user not in friend.friend_requests.all():
+                    return HttpResponse("No sent friend request to this user", status=400)
+                friend.friend_requests.remove(user)
+                friend.save()
+                return HttpResponse("Friend request canceled", status=200)
+            except (KeyError, ValueError):
+                return HttpResponse("Invalid data provided", status=400)
+        elif action == 'setFriendPerms':
+            try:
+                user_id = int(request.POST['user_id'])
+                user = get_object_or_404(User, pk=user_id)
+                perms = request.POST['perms']
+                if perms not in ['P', 'V', 'M']:
+                    return HttpResponse("Invalid permissions value", status=400)
+                user.friend_perms = perms
+                user.save()
+                return HttpResponse("Friend permissions updated", status=200)
+            except (KeyError, ValueError):
+                return HttpResponse("Invalid data provided", status=400)
         else:
             return HttpResponse("Invalid action", status=400)
     else:
         return HttpResponse("Method Not Allowed: " + request.method, status=405)
 
+def edit(request, pk):
+    user = get_object_or_404(User, pk=pk)
+    todo_items = TodoItem.objects.filter(user=user)
+    categories = Team.objects.filter(members=user).order_by('name')
+    if categories.exists():
+        categorized = []
+        for category in categories:
+            items_in_category = todo_items.filter(category=category)
+            if items_in_category.exists():
+                categorized.append({'name': category.name, 'todo_items': items_in_category, 'modify': True, 'id': category.id, 'super': False})
+        uncategorized_items = todo_items.filter(category__isnull=True)
+        if uncategorized_items.exists():
+            categorized.append({'name': 'Uncategorized', 'todo_items': uncategorized_items, 'modify': True, 'id': -1, 'super': False})
+        return render(request, 'todo/edit.html', {'user': user, 'categories': categorized})
+    else:
+        return render(request, 'todo/edit.html', {'user': user, 'categories': [{'name': 'Uncategorized', 'todo_items': todo_items, 'modify': True, 'id': -1, 'super': False}]})
+    
 def user(request, pk):
     user = get_object_or_404(User, pk=pk)
-    return render(request, 'todo/user.html', {'user': user})
+    categories = Team.objects.filter(members=user)
+    friend_requests = User.objects.filter(friend_requests=user)
+    incoming_requests = user.friend_requests.all()
+    friends = user.friends.all()
+    self = get_object_or_404(User, username=request.user.username) if request.user.is_authenticated else None
+    return render(request, 'todo/user.html', {'user': user, 'categories': categories, "friend_requests": friend_requests, "incoming_requests": incoming_requests, "friends": friends, "self": self})
+
+def user_redirect(request):
+    if request.user.is_authenticated:
+        try:
+            user = User.objects.get(username=request.user.username)
+            return HttpResponseRedirect(reverse('todo:user', args=(user.id,)))
+        except User.DoesNotExist:
+            return HttpResponse("User not found. Try logging in again.", status=404)
+    else:
+        return HttpResponseRedirect(reverse('login'))
+
+def team(request, pk):
+    team = get_object_or_404(Team, pk=pk)
+    members = team.members.all()
+    leaders = team.leaders.all()
+    todo_items = TodoItem.objects.filter(category=team)
+    return render(request, 'todo/team.html', {'team': team, 'members': members, 'leaders': leaders, 'todo_items': todo_items})

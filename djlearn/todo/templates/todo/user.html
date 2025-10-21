@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Edit to-do list</title>
+        <title>Profile</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         {% load static %}
@@ -10,86 +10,22 @@
     </head>
     <body>
         <script>
-            let csrfToken = '{{ csrf_token }}'.split('value=')[0];
-            function deleteItem(item_id) {
-                if (!confirm("Delete item?")) return;
-                var xmlHttp = new XMLHttpRequest();
-                xmlHttp.onreadystatechange = () => {
-                    if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-                        location.reload();
-                }
-                xmlHttp.open("POST", "{% url 'todo:update' %}", true);
-                xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=delete&item_id=" + item_id);
+            const csrfToken = '{{ csrf_token }}'.split('value=')[0];
+            function getFriendName() {
+                return document.getElementById('add_friend').value;
             }
-            function reset() {
-                try {
-                    document.getElementById('name').remove();
-                    document.getElementById('description').remove();
-                    document.getElementById('submitButton').remove();
-                    document.getElementById('deleteButton').remove();
-                } catch {}
-            }
-            function startAddItem() {
-                reset();
-                let nameInput = document.createElement("input");
-                nameInput.type = "text";
-                nameInput.id = "name";
-                nameInput.placeholder = "Name";
-                let descriptionInput = document.createElement("input");
-                descriptionInput.type = "text";
-                descriptionInput.id = "description";
-                descriptionInput.placeholder = "Description";
-                let submitButton = document.createElement("button");
-                submitButton.innerText = "Add item";
-                submitButton.id = "submitButton";
-                submitButton.onclick = addItem;
-                document.getElementById("fieldset").appendChild(nameInput);
-                document.getElementById("fieldset").appendChild(descriptionInput);
-                document.getElementById("fieldset").appendChild(submitButton);
-            }
-            function addItem() {
+            function addFriend(friend_id) {
                 var xmlHttp = new XMLHttpRequest();
                 xmlHttp.open("POST", "{% url 'todo:update' %}", true);
                 xmlHttp.onreadystatechange = () => {
-                    if (xmlHttp.readyState == 4 && xmlHttp.status == 201)
-                        location.reload();
-                }
-                let name = document.getElementById('name').value;
-                let description = document.getElementById('description').value;
-                if (name === "") {
-                    name = "empty";
-                }
-                if (description === "") {
-                    description = "empty";
+                    if (xmlHttp.readyState == 4)
+                        if (xmlHttp.status == 201) location.reload();
+                        else if (xmlHttp.status == 404) alert("User not found. Make sure you use their username, not display name.");
                 }
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=add&user_id=" + {{ user.id }} + "&name=" + name + "&description=" + description);
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=addFriend&user_id=" + {{ self.id }} + "&friend_id=" + friend_id);
             }
-            function startEditItem(item_id) {
-                reset();
-                let nameInput = document.createElement("input");
-                nameInput.type = "text";
-                nameInput.id = "name";
-                nameInput.placeholder = "Name";
-                let descriptionInput = document.createElement("input");
-                descriptionInput.type = "text";
-                descriptionInput.id = "description";
-                descriptionInput.placeholder = "Description";
-                let submitButton = document.createElement("button");
-                submitButton.innerText = "Submit changes";
-                submitButton.id = "submitButton";
-                submitButton.onclick = () => editItem(item_id);
-                let deleteButton = document.createElement("button");
-                deleteButton.innerText = "Delete item";
-                deleteButton.id = "deleteButton";
-                deleteButton.onclick = () => deleteItem(item_id);
-                document.getElementById("fieldset").appendChild(nameInput);
-                document.getElementById("fieldset").appendChild(descriptionInput);
-                document.getElementById("fieldset").appendChild(submitButton);
-                document.getElementById("fieldset").appendChild(deleteButton);
-            }
-            function editItem(item_id) {
+            function cancelFriendRequest(friend_id) {
                 var xmlHttp = new XMLHttpRequest();
                 xmlHttp.open("POST", "{% url 'todo:update' %}", true);
                 xmlHttp.onreadystatechange = () => {
@@ -97,49 +33,82 @@
                         location.reload();
                 }
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                let name = document.getElementById('name').value;
-                let description = document.getElementById('description').value;
-                if (name === "") {
-                    name = "empty";
-                }
-                if (description === "") {
-                    description = "empty";
-                }
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=edit&item_id=" + item_id + "&name=" + name + "&description=" + description);
-                document.getElementById('name').remove();
-                document.getElementById('description').remove();
-                document.getElementById('submitButton').remove();
-                document.getElementById('deleteButton').remove();
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=cancelFriendRequest&user_id=" + {{ user.id }} + "&friend_id=" + friend_id);
             }
-            function deleteUser() {
-                if (!confirm("Delete user {{ user.username }}?")) return;
+            function acceptFriendRequest(friend_id) {
                 var xmlHttp = new XMLHttpRequest();
                 xmlHttp.open("POST", "{% url 'todo:update' %}", true);
                 xmlHttp.onreadystatechange = () => {
-                    if (xmlHttp.readyState == 4 && xmlHttp.status == 200) 
-                        window.location.assign(xmlHttp.responseURL);
+                    if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                        location.reload();
                 }
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=deleteUser&user_id={{ user.id }}");
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=acceptFriend&user_id=" + {{ user.id }} + "&friend_id=" + friend_id);
+            }
+            function rejectFriendRequest(friend_id) {
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                xmlHttp.onreadystatechange = () => {
+                    if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                        location.reload();
+                }
+                xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=declineFriend&user_id=" + {{ user.id }} + "&friend_id=" + friend_id);
+            }
+            function removeFriend(friend_id) {
+                var xmlHttp = new XMLHttpRequest();
+                if (confirm("Are you sure you want to remove this friend? You can always re-add them later.")) {
+                    xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                    xmlHttp.onreadystatechange = () => {
+                        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                            location.reload();
+                    }
+                    xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+                    xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=removeFriend&user_id=" + {{ user.id }} + "&friend_id=" + friend_id);
+                } else return;
             }
         </script>
-        <h1>Edit to-do list for {{ user.username }}</h1>
+        <h1>{{ user.display_name }}'s Profile</h1>
+        <h2><a href="{% url 'todo:todolist' user.id %}">To-Do List</a></h2>
+        {% if categories %}
+        <h2>Teams</h2>
         <ul>
-        {% for item in user.todoitem_set.all %} 
-            <li>
-                <button onclick="startEditItem({{ item.id }})">Edit</button>
-                {{ item.name }} - {{ item.description }}
-            </li>
+            {% for category in categories %}
+            <li><a href="{% url 'todo:team' category.id %}">{{ category.name }}</a></li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% if self == user %}
+        <h2>Friends</h2>
+        <input id="add_friend">
+        <button onclick="addFriend(getFriendId())">Add Friend</button>
+        <ul>
+        {% for request in friend_requests %}
+            <li>{{ request.display_name }}<button onclick="cancelFriendRequest({{ request.id }})">Cancel</button></li>
         {% empty %}
-            <li>No to-do items found.</li>
+            <li>No outgoing friend requests.</li>
         {% endfor %}
         </ul>
-        <button onclick="startAddItem()">Add item</button>
-        <br>
-        <div id="fieldset"></div>
-        <br>
-        <a href="{% url 'todo:todolist' user.id %}">Back to todo list</a>
-        <br>
-        <button onclick="deleteUser()">Delete User</button>
+        <ul>
+        {% for request_inc in incoming_requests %}
+            <li>{{ request_inc.display_name }}<button onclick="acceptFriendRequest({{ request_inc.id }})">Accept</button><button onclick="rejectFriendRequest({{ request_inc.id }})">Reject</button></li>
+        {% empty %}
+            <li>No incoming friend requests.</li>
+        {% endfor %}
+        </ul>
+        <ul>
+        {% for friend in friends %}
+            <li><a href="{% url 'todo:user' friend.id %}">{{ friend.display_name }}</a><button onclick="removeFriend({{ friend.id }})">Remove</button></li>
+        {% empty %}
+            <li>No friends found.</li>
+        {% endfor %}
+        </ul>
+        {% elif self %}
+        {% if self in friends or self in incoming_requests or self in friend_requests %}
+        <p><button disabled="">Add Friend</button></p>
+        {% else %}
+        <p><button onclick="addFriend('{{ user.username }}')">Add Friend</button></p>
+        {% endif %}
+        {% endif %}
     </body>
 </html>

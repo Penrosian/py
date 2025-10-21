@@ -10,7 +10,7 @@
     </head>
     <body>
         <script>
-            let csrfToken = '{{ csrf_token }}'.split('value=')[0];
+            const csrfToken = '{{ csrf_token }}'.split('value=')[0];
             function updateItem(element, item_id) {
                 var xmlHttp = new XMLHttpRequest();
                 xmlHttp.onreadystatechange = () => {
@@ -23,33 +23,41 @@
             }
         </script>
         <h1>To-do list for {{ user.username }}</h1>
-        <ul>
-        {% for item in todo_list %}
-        <li>
-            <button onclick="updateItem(this, {{ item.id }})">
-                {% if item.completed %}
-                    ✔
-                {% else %}
-                    ☐
-                {% endif %}
-            </button>
-            {% if item.name %}
-            {{ item.name }}
-            {% else %}
-            (No name)
-            {% endif %}
-            {% if item.description != "empty" %}
-                <ul>
-                    <li>{{ item.description }}</li>
-                </ul>
-            {% endif %}
-        </li>
+        {% for category in categories %}
+        <fieldset>
+            <legend>{{ category.name }}</legend>
+            <ul>
+                {% for item in category.todo_items %}
+                <li>
+                    {% if category.modify %}<button onclick="updateItem(this, {{ item.id }})">{% endif %}
+                    {% if item.completed %}
+                        ✔
+                    {% else %}
+                        ☐
+                    {% endif %}
+                    {% if category.modify %}</button>{% endif %}
+                    &nbsp;
+                    {% if item.name %}
+                    {{ item.name }}
+                    {% else %}
+                    (No name)
+                    {% endif %}
+                    {% if item.description %}
+                        <ul>
+                            <li>{{ item.description }}</li>
+                        </ul>
+                    {% endif %}
+                </li>
+                {% empty %}
+                    <li>No to-do items found.</li>
+                {% endfor %}
+            </ul>
+        </fieldset>
         {% empty %}
-            <li>No to-do items found.</li>
+            <p>No categories found.</p>
         {% endfor %}
-        </ul>
-        <a href="{% url 'todo:user' user.id %}">Edit to-do list</a>
+        <a href="{% url 'todo:edit' user.id %}">Edit to-do list</a>
         <br>
-        <a href="{% url 'todo:index' %}">Back to user list</a>
+        <a href="{% url 'todo:user' user.id %}">Back to profile</a>
     </body>
 </html>
