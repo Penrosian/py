@@ -20,14 +20,15 @@ from django.conf import settings
 from . import views
 
 urlpatterns = [
-    path('polls/', include('polls.urls')),
-    path('admin/', admin.site.urls),
-    path('todo/', include('todo.urls')),
+    path('polls/', include('polls.urls'), name='polls'),
+    path('admin/', admin.site.urls, name='admin'),
+    path('todo/', include('todo.urls'), name='todo'),
+    path('accounts/', include('django.contrib.auth.urls'), name='accounts'),
     path('', views.index, name='index'),
 ]
 
 if not settings.TESTING:
-    from debug_toolbar.toolbar import debug_toolbar_urls    
+    from debug_toolbar.toolbar import debug_toolbar_urls
 
     urlpatterns = [
         *urlpatterns,

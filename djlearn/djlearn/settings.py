@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'polls.apps.PollsConfig',
     'todo.apps.TodoConfig',
+    'accounts.apps.AccountsConfig',
 ]
 
 MIDDLEWARE = [
@@ -144,6 +145,8 @@ INTERNAL_IPS = [
     '127.0.0.1',
     'localhost',
 ]
+
+LOGIN_REDIRECT_URL = '/todo/user/'
 
 TESTING = 'test' in sys.argv or 'PYTEST_VERSION' in os.environ
 
