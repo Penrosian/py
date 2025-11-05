@@ -115,14 +115,12 @@ class Time:
     
     def increment(self, seconds):
         self.seconds = seconds + self.seconds
+        
+        self.minutes = self.minutes + self.seconds // 60
+        self.seconds = self.seconds % 60
 
-        while self.seconds >= 60:
-            self.seconds = self.seconds - 60
-            self.minutes = self.minutes + 1
-
-        while self.minutes >= 60:
-            self.minutes = self.minutes - 60
-            self.hours = self.hours + 1
+        self.hours = self.hours + self.minutes // 60
+        self.minutes = self.minutes % 60
     
     def after(self, other):
         if self.hours > other.hours:
