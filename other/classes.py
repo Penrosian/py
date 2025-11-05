@@ -105,6 +105,15 @@ class Polynomial:
         return " + ".join(terms) if terms else "0"
 
 class Time:
+    """
+    >>> time1 = Time(1, 30, 45)
+    >>> time1.increment(10)
+    >>> time1.print_time()
+    1:30:55
+    >>> time1.increment(10)
+    >>> time1.print_time()
+    1:31:05
+    """
     def __init__(self, hours=0, minutes=0, seconds=0):
         self.hours = hours
         self.minutes = minutes
@@ -136,6 +145,23 @@ class Time:
         if self.seconds > other.seconds:
             return True
         return False
+
+def increment(time, seconds):
+    """
+    >>> time1 = Time(1, 30, 45)
+    >>> new_time = increment(time1, 20)
+    >>> new_time.print_time()
+    1:31:05
+    """
+    time_seconds = time.seconds + seconds
+
+    time_minutes = time.minutes + time_seconds // 60
+    time_seconds = time_seconds % 60
+
+    time_hours = time.hours + time_minutes // 60
+    time_minutes = time_minutes % 60
+
+    return Time(time_hours, time_minutes, time_seconds)
 
 if __name__ == "__main__":
     doctest.testmod()
