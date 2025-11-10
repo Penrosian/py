@@ -147,6 +147,9 @@ INTERNAL_IPS = [
 ]
 
 LOGIN_REDIRECT_URL = '/todo/user/'
+LOGOUT_REDIRECT_URL = '/todo/'
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 TESTING = 'test' in sys.argv or 'PYTEST_VERSION' in os.environ
 

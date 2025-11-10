@@ -11,7 +11,7 @@
     <body>
         <script>
             const csrfToken = '{{ csrf_token }}'.split('value=')[0];
-            function getFriendName() {
+            function getFriendId() {
                 return document.getElementById('add_friend').value;
             }
             function addFriend(friend_id) {
@@ -23,7 +23,7 @@
                         else if (xmlHttp.status == 404) alert("User not found. Make sure you use their username, not display name.");
                 }
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=addFriend&user_id=" + {{ self.id }} + "&friend_id=" + friend_id);
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=addFriend&friend_id=" + friend_id);
             }
             function cancelFriendRequest(friend_id) {
                 var xmlHttp = new XMLHttpRequest();
@@ -33,7 +33,7 @@
                         location.reload();
                 }
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=cancelFriendRequest&user_id=" + {{ user.id }} + "&friend_id=" + friend_id);
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=cancelFriendRequest&friend_id=" + friend_id);
             }
             function acceptFriendRequest(friend_id) {
                 var xmlHttp = new XMLHttpRequest();
@@ -43,7 +43,7 @@
                         location.reload();
                 }
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=acceptFriend&user_id=" + {{ user.id }} + "&friend_id=" + friend_id);
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=acceptFriend&friend_id=" + friend_id);
             }
             function rejectFriendRequest(friend_id) {
                 var xmlHttp = new XMLHttpRequest();
@@ -67,8 +67,76 @@
                     xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=removeFriend&user_id=" + {{ user.id }} + "&friend_id=" + friend_id);
                 } else return;
             }
+            function changePassword() {
+                window.location.href = "{% url 'password_change' %}";
+            }
+            function logout() {
+                if (confirm("Are you sure you want to log out?")) {
+                    var xmlHttp = new XMLHttpRequest();
+                    xmlHttp.open("POST", "{% url 'logout' %}", true);
+                    xmlHttp.onreadystatechange = () => {
+                        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                            window.location.href = xmlHttp.responseURL;
+                    }
+                    xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+                    xmlHttp.send("csrfmiddlewaretoken=" + csrfToken);
+                }
+            }
+            function updateFriendPerms() {
+                var xmlHttp = new XMLHttpRequest();
+                var perms = document.getElementById('friend_perms').value;
+                xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=updateFriendPerms&user_id=" + {{ user.id }} + "&perms=" + perms);
+            }
+            function updateEveryonePerms() {
+                var xmlHttp = new XMLHttpRequest();
+                var perms = document.getElementById('everyone_perms').value;
+                let cont = true;
+                if (perms == "M") {
+                    cont = confirm("Warning: Allowing everyone to modify your to-do lists can lead to unwanted changes. It is recommended to set this to 'View' or 'None'.");
+                }
+                if (cont) {
+                    xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                    xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+                    xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=updateEveryonePerms&user_id=" + {{ user.id }} + "&perms=" + perms);
+                }
+            }
+            function updateDisplayName() {
+                var xmlHttp = new XMLHttpRequest();
+                var display_name = document.getElementById('display_name').value;
+                xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                xmlHttp.onreadystatechange = () => {
+                    if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                        location.reload();
+                }
+                xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=setDisplayName&user_id=" + {{ user.id }} + "&display_name=" + display_name);
+            }
+            function setEmail() {
+                email = prompt("Please enter your email address:");
+                if (email != null) {
+                    var xmlHttp = new XMLHttpRequest();
+                    xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                    xmlHttp.onreadystatechange = () => {
+                        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                            alert("Email updated successfully.");
+                    }
+                    xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+                    xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=setEmail&user_id=" + {{ user.id }} + "&email=" + email);
+                }
+            }
         </script>
         <h1>{{ user.display_name }}'s Profile</h1>
+        <h5>({{user.username}})</h5>
+        {% if self == user %}
+        <p>
+            <input id="display_name" placeholder="Display Name"><button onclick="updateDisplayName()">Set display name</button>
+            <button onclick="logout()">Log out</button>
+            <button onclick="changePassword()">Change Password</button>
+            <button onclick="setEmail()">Set Email</button>
+        </p>
+        {% endif %}
         <h2><a href="{% url 'todo:todolist' user.id %}">To-Do List</a></h2>
         {% if categories %}
         <h2>Teams</h2>
@@ -103,9 +171,24 @@
             <li>No friends found.</li>
         {% endfor %}
         </ul>
+        <label for="friend_perms">Friend Permissions:</label>
+        <select id="friend_perms" name="friend_perms">
+            <option value="P" {% if user.friend_perms == "P" %}selected{% endif %}>None</option>
+            <option value="V" {% if user.friend_perms == "V" %}selected{% endif %}>View</option>
+            <option value="M" {% if user.friend_perms == "M" %}selected{% endif %}>Modify</option>
+        </select>
+        <button onclick="updateFriendPerms()">Update</button>
+        
+        <label for="everyone_perms">Everyone Permissions:</label>
+        <select id="everyone_perms" name="everyone_perms">
+            <option value="P" {% if user.everyone_perms == "P" %}selected{% endif %}>None</option>
+            <option value="V" {% if user.everyone_perms == "V" %}selected{% endif %}>View</option>
+            <option value="M" {% if user.everyone_perms == "M" %}selected{% endif %}>Modify</option>
+        </select>
+        <button onclick="updateEveryonePerms()">Update</button>
         {% elif self %}
         {% if self in friends or self in incoming_requests or self in friend_requests %}
-        <p><button disabled="">Add Friend</button></p>
+        <p><button disabled="" style="color: rgb(58, 58, 58);">Add Friend</button></p>
         {% else %}
         <p><button onclick="addFriend('{{ user.username }}')">Add Friend</button></p>
         {% endif %}

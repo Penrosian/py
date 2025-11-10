@@ -11,4 +11,5 @@ urlpatterns = [
     path('user/', views.user_redirect, name='user_redirect'),
     path('user/<int:pk>/', views.user, name='user'),
     path('team/<int:pk>/', views.team, name='team'),
+    path('signup/', views.signup, name='signup'),
 ]

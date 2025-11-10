@@ -7,46 +7,16 @@
         {% load static %}
         <link rel="stylesheet" type="text/css" href="{% static 'todo/styles.css' %}">
         <script src="{% static 'todo/init.js' %}"></script>
+        {% if user.is_authenticated %}
+        <script>
+            window.location.href = "{% url 'todo:user' todo_user.id %}";
+        </script>
+        {% endif %}
     </head>
     <body>
-        <script>
-            let csrfToken = '{{ csrf_token }}'.split('value=')[0];
-            function startAddUser() {
-                try {
-                    document.getElementById("userInput").remove();
-                } catch {}
-                let userInput = document.createElement("input");
-                userInput.id = "userInput";
-                userInput.placeholder = "Username";
-                userInput.type = "text";
-                let submitButton = document.createElement("Button");
-                submitButton.id = "submitButton";
-                submitButton.innerText = "Add";
-                submitButton.onclick = () => addUser();
-                document.body.appendChild(userInput);
-                document.body.appendChild(submitButton);
-            }
-            function addUser() {
-                var xmlHttp = new XMLHttpRequest();
-                xmlHttp.open("POST", "{% url 'todo:update' %}");
-                xmlHttp.onreadystatechange = () => {
-                    if (xmlHttp.readyState === 4 && xmlHttp.status === 201) 
-                        location.reload();
-                }
-                let username = document.getElementById("userInput").value
-                if (username == "") return;
-                xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=addUser&username=" + username);
-            }
-        </script>
-        <h1>To-do Lists</h1>
-        <ul>
-        {% for user in user_list %}
-            <li><a href="{% url 'todo:todolist' user.id %}">{{ user.username }}</a></li>
-        {% empty %}
-            <li>No users have todo items.</li>
-        {% endfor %}
-        </ul>
-        <button onclick="startAddUser()">Add User</button>
+        <h1>Welcome to the To-do app!</h1>
+        <button onclick="window.location.href='{% url 'login' %}'">Log In</button>
+        <button onclick="window.location.href='{% url 'password_reset' %}'">Forgot Password</button>
+        <button onclick="window.location.href='{% url 'signup' %}'">Sign Up</button>
     </body>
 </html>

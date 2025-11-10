@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Login</title>
+        <title>Sign Up</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         {% load static %}
@@ -9,11 +9,11 @@
         <script src="{% static 'registration/init.js' %}"></script>
     </head>
     <body>
-        <h2>Login</h2>
-        <form method="post">
+        <h2>Sign Up</h2>
+        <form method="post" action="{% url 'todo:signup' %}">
             {% csrf_token %}
             {{ form }}
-            <button type="submit">Login</button>
+            <button type="submit">Sign Up</button>
         </form>
     </body>
 </html>

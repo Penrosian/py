@@ -146,7 +146,7 @@ class Time:
             return True
         return False
 
-def increment(time, seconds):
+def increment(time: Time, seconds: int) -> Time:
     """
     >>> time1 = Time(1, 30, 45)
     >>> new_time = increment(time1, 20)

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db import models
 
 # Register your models here.
-from .models import User, TodoItem, Team
+from.models import Todo_User, TodoItem, Team
 
 class TodoItemInline(admin.TabularInline):
     model = TodoItem
@@ -40,5 +40,5 @@ class TeamAdmin(admin.ModelAdmin):
     list_display = ["name"]
     search_fields = ["name"]
 
-admin.site.register(User, UserAdmin)
+admin.site.register(Todo_User, UserAdmin)
 admin.site.register(Team, TeamAdmin)
