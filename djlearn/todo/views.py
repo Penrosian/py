@@ -2,7 +2,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from accounts.views import SignUpView
-from.models import Todo_User, TodoItem, Team
+from .models import Todo_User, TodoItem, Team
 
 # Create your views here.
 
@@ -48,13 +48,12 @@ def check_modify_permission(user, self):
     elif self in user.friends.all() and user.friend_perms == 'M':
         return True
     return False
-def update(request):
+def update(request, action) -> HttpResponse:
     # CSRF validation does not like any methods that aren't POST, so I just use that for everything
     if request.method == 'POST':
-        action = request.POST.get('action')
         if action == 'toggle':
             try:
-                item_id = int(request.POST['item_id'])
+                item_id = int(request.POST["item_id"])
                 item = get_object_or_404(TodoItem, pk=item_id)
                 if not check_modify_permission(item.user, get_object_or_404(Todo_User, username=request.user.username)):
                     return HttpResponse("You do not have permission to modify this user's todo list.", status=403)
@@ -65,7 +64,7 @@ def update(request):
                 return HttpResponse("Invalid item ID", status=400)
         elif action == 'edit':
             try:
-                item_id = int(request.POST['item_id'])
+                item_id = int(request.POST["item_id"])
                 item = get_object_or_404(TodoItem, pk=item_id)
                 if not check_modify_permission(item.user, get_object_or_404(Todo_User, username=request.user.username) if request.user.is_authenticated else None):
                     return HttpResponse("You do not have permission to modify this user's todo list.", status=403)
@@ -77,14 +76,14 @@ def update(request):
                 return HttpResponse("Invalid data provided", status=400)
         elif action == 'add':
             try:
-                user_id = int(request.POST['user_id'])
+                user_id = int(request.POST["user_id"])
                 user = get_object_or_404(Todo_User, pk=user_id)
                 if not check_modify_permission(user, get_object_or_404(Todo_User, username=request.user.username) if request.user.is_authenticated else None):
                     return HttpResponse("You do not have permission to modify this user's todo list.", status=403)
+                category_id = int(request.POST["category_id"])
                 name = request.POST['name']
                 description = request.POST['description']
-                category_id = request.POST['category_id']
-                new_item = TodoItem(user=user, name=name, description=description, completed=False, assigned=False, category=Team.objects.get(pk=category_id) if category_id != '-1' else None)
+                new_item = TodoItem(user=user, name=name, description=description, category=Team.objects.get(pk=category_id) if category_id != -1 else None)
                 new_item.save()
                 return HttpResponse("Item added successfully", status=201)
             except (KeyError, ValueError):
@@ -99,18 +98,12 @@ def update(request):
                 return HttpResponse("Item deleted successfully", status=200)
             except (KeyError, ValueError):
                 return HttpResponse("Invalid item ID", status=400)
-        elif action == 'addUser':
-            try:
-                username = request.POST['username']
-                new_user = Todo_User(username=username)
-                new_user.save()
-                return HttpResponse("User created successfully", status=201)
-            except (KeyError, ValueError):
-                return HttpResponse("Invalid data provided", status=400)
         elif action == 'deleteUser':
             try:
                 user_id = int(request.POST['user_id'])
                 user = get_object_or_404(Todo_User, pk=user_id)
+                if not user == get_object_or_404(Todo_User, username=request.user.username):
+                    return HttpResponse("Can only delete self", status=403)
                 user.delete()
                 return HttpResponseRedirect(reverse('todo:index'))
             except (KeyError, ValueError):
@@ -118,7 +111,7 @@ def update(request):
         elif action == 'addFriend':
             try:
                 user = get_object_or_404(Todo_User, username=request.user.username)
-                friend_name = request.POST['friend_id']
+                friend_name = request.POST['friend_name']
                 friend = get_object_or_404(Todo_User, username=friend_name)
                 if friend == user:
                     return HttpResponse("Cannot add yourself as a friend", status=400)
@@ -180,7 +173,7 @@ def update(request):
                 return HttpResponse("Friend request canceled", status=200)
             except (KeyError, ValueError):
                 return HttpResponse("Invalid data provided", status=400)
-        elif action == 'updateFriendPerms':
+        elif action == 'setFriendPerms':
             try:
                 user = get_object_or_404(Todo_User, username=request.user.username)
                 perms = request.POST['perms']
@@ -191,7 +184,7 @@ def update(request):
                 return HttpResponse("Friend permissions updated", status=200)
             except (KeyError, ValueError):
                 return HttpResponse("Invalid data provided", status=400)
-        elif action == 'updateEveryonePerms':
+        elif action == 'setEveryonePerms':
             try:
                 user = get_object_or_404(Todo_User, username=request.user.username)
                 perms = request.POST['perms']
@@ -268,8 +261,7 @@ def team(request, pk):
 def signup(request):
     if request.method == 'POST':
         signup = SignUpView.as_view()(request)
-        if signup:
-            Todo_User.objects.create(username=request.POST['username'], display_name=request.POST['username'])
-            return signup
+        Todo_User.objects.create(username=request.POST['username'], display_name=request.POST['username'])
+        return signup
     else:
         return HttpResponse(status=405)

@@ -39,7 +39,7 @@ class PermissionsTests(TestCase):
         user1.friends.add(user2)
         response = self.client.get(f'/todo/todolist/{user1.id}/')
         self.assertEqual(response.status_code, 200)
-        response = self.client.post(f'/todo/update/', "action=add&user_id=" + str(user1.id) + "&name=test&description=&category_id=-1", content_type="application/x-www-form-urlencoded")
+        response = self.client.post(f'/todo/update/add/', "user_id=" + str(user1.id) + "&name=test&description=&category_id=-1", content_type="application/x-www-form-urlencoded")
         self.assertEqual(response.status_code, 403)
     
     def test_no_friend_permission(self):
@@ -48,7 +48,7 @@ class PermissionsTests(TestCase):
         user1.friends.add(user2)
         response = self.client.get(f'/todo/todolist/{user1.id}/')
         self.assertEqual(response.status_code, 403)
-        response = self.client.post(f'/todo/update/', "action=add&user_id=" + str(user1.id) + "&name=test&description=&category_id=-1", content_type="application/x-www-form-urlencoded")
+        response = self.client.post(f'/todo/update/add/', "user_id=" + str(user1.id) + "&name=test&description=&category_id=-1", content_type="application/x-www-form-urlencoded")
         self.assertEqual(response.status_code, 403)
 
     def test_modify_friend_permission(self):
@@ -59,28 +59,28 @@ class PermissionsTests(TestCase):
         self.client.login(username='friend', password='12345')
         response = self.client.get(f'/todo/todolist/{user1.id}/')
         self.assertEqual(response.status_code, 200)
-        response = self.client.post(f'/todo/update/', "action=add&user_id=" + str(user1.id) + "&name=test&description=&category_id=-1", content_type="application/x-www-form-urlencoded")
+        response = self.client.post(f'/todo/update/add/', "user_id=" + str(user1.id) + "&name=test&description=&category_id=-1", content_type="application/x-www-form-urlencoded")
         self.assertEqual(response.status_code, 201)
     
     def test_view_everyone_permission(self):
         user = Todo_User.objects.create(username="user", friend_perms="P", everyone_perms="V")
         response = self.client.get(f'/todo/todolist/{user.id}/')
         self.assertEqual(response.status_code, 200)
-        response = self.client.post(f'/todo/update/', "action=add&user_id=" + str(user.id) + "&name=test&description=&category_id=-1", content_type="application/x-www-form-urlencoded")
+        response = self.client.post(f'/todo/update/add/', "user_id=" + str(user.id) + "&name=test&description=&category_id=-1", content_type="application/x-www-form-urlencoded")
         self.assertEqual(response.status_code, 403)
 
     def test_no_everyone_permission(self):
         user = Todo_User.objects.create(username="user", friend_perms="P", everyone_perms="P")
         response = self.client.get(f'/todo/todolist/{user.id}/')
         self.assertEqual(response.status_code, 403)
-        response = self.client.post(f'/todo/update/', "action=add&user_id=" + str(user.id) + "&name=test&description=&category_id=-1", content_type="application/x-www-form-urlencoded")
+        response = self.client.post(f'/todo/update/add/', "user_id=" + str(user.id) + "&name=test&description=&category_id=-1", content_type="application/x-www-form-urlencoded")
         self.assertEqual(response.status_code, 403)
 
     def test_modify_everyone_permission(self):
         user = Todo_User.objects.create(username="user", friend_perms="P", everyone_perms="M")
         response = self.client.get(f'/todo/todolist/{user.id}/')
         self.assertEqual(response.status_code, 200)
-        response = self.client.post(f'/todo/update/', "action=add&user_id=" + str(user.id) + "&name=test&description=&category_id=-1", content_type="application/x-www-form-urlencoded")
+        response = self.client.post(f'/todo/update/add/', "user_id=" + str(user.id) + "&name=test&description=&category_id=-1", content_type="application/x-www-form-urlencoded")
         self.assertEqual(response.status_code, 201)
     
     def test_lower_friend_permission(self):
@@ -91,5 +91,5 @@ class PermissionsTests(TestCase):
         user1.friends.add(user2)
         response = self.client.get(f'/todo/todolist/{user1.id}/')
         self.assertEqual(response.status_code, 200)
-        response = self.client.post(f'/todo/update/', "action=add&user_id=" + str(user1.id) + "&name=test&description=&category_id=-1", content_type="application/x-www-form-urlencoded")
+        response = self.client.post(f'/todo/update/add/', "user_id=" + str(user1.id) + "&name=test&description=&category_id=-1", content_type="application/x-www-form-urlencoded")
         self.assertEqual(response.status_code, 201)

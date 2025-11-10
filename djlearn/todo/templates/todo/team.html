@@ -111,17 +111,6 @@
                 document.getElementById('submitButton').remove();
                 document.getElementById('deleteButton').remove();
             }
-            function deleteUser() {
-                if (!confirm("Delete user {{ user.username }}?")) return;
-                var xmlHttp = new XMLHttpRequest();
-                xmlHttp.open("POST", "{% url 'todo:update' %}", true);
-                xmlHttp.onreadystatechange = () => {
-                    if (xmlHttp.readyState == 4 && xmlHttp.status == 200) 
-                        window.location.assign(xmlHttp.responseURL);
-                }
-                xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=deleteUser&user_id={{ user.id }}");
-            }
         </script>
         <h1>{{ team.name }}</h1>
         <h2>Members</h2>

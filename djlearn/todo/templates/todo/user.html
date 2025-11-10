@@ -11,60 +11,60 @@
     <body>
         <script>
             const csrfToken = '{{ csrf_token }}'.split('value=')[0];
-            function getFriendId() {
+            function getFriendName() {
                 return document.getElementById('add_friend').value;
             }
-            function addFriend(friend_id) {
+            function addFriend(friend_name) {
                 var xmlHttp = new XMLHttpRequest();
-                xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                xmlHttp.open("POST", "{% url 'todo:update' 'addFriend' %}", true);
                 xmlHttp.onreadystatechange = () => {
                     if (xmlHttp.readyState == 4)
                         if (xmlHttp.status == 201) location.reload();
                         else if (xmlHttp.status == 404) alert("User not found. Make sure you use their username, not display name.");
                 }
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=addFriend&friend_id=" + friend_id);
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&friend_id=" + friend_name);
             }
             function cancelFriendRequest(friend_id) {
                 var xmlHttp = new XMLHttpRequest();
-                xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                xmlHttp.open("POST", "{% url 'todo:update' 'cancelFriendRequest' %}", true);
                 xmlHttp.onreadystatechange = () => {
                     if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
                         location.reload();
                 }
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=cancelFriendRequest&friend_id=" + friend_id);
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&friend_id=" + friend_id);
             }
             function acceptFriendRequest(friend_id) {
                 var xmlHttp = new XMLHttpRequest();
-                xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                xmlHttp.open("POST", "{% url 'todo:update' 'acceptFriend' %}", true);
                 xmlHttp.onreadystatechange = () => {
                     if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
                         location.reload();
                 }
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=acceptFriend&friend_id=" + friend_id);
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&friend_id=" + friend_id);
             }
             function rejectFriendRequest(friend_id) {
                 var xmlHttp = new XMLHttpRequest();
-                xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                xmlHttp.open("POST", "{% url 'todo:update' 'declineFriend' %}", true);
                 xmlHttp.onreadystatechange = () => {
                     if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
                         location.reload();
                 }
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=declineFriend&user_id=" + {{ user.id }} + "&friend_id=" + friend_id);
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&user_id=" + {{ user.id }} + "&friend_id=" + friend_id);
             }
             function removeFriend(friend_id) {
                 var xmlHttp = new XMLHttpRequest();
                 if (confirm("Are you sure you want to remove this friend? You can always re-add them later.")) {
-                    xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                    xmlHttp.open("POST", "{% url 'todo:update' 'removeFriend' %}", true);
                     xmlHttp.onreadystatechange = () => {
                         if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
                             location.reload();
                     }
                     xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                    xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=removeFriend&user_id=" + {{ user.id }} + "&friend_id=" + friend_id);
+                    xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&user_id=" + {{ user.id }} + "&friend_id=" + friend_id);
                 } else return;
             }
             function changePassword() {
@@ -85,9 +85,9 @@
             function updateFriendPerms() {
                 var xmlHttp = new XMLHttpRequest();
                 var perms = document.getElementById('friend_perms').value;
-                xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                xmlHttp.open("POST", "{% url 'todo:update' 'setFriendPerms' %}", true);
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=updateFriendPerms&user_id=" + {{ user.id }} + "&perms=" + perms);
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&user_id=" + {{ user.id }} + "&perms=" + perms);
             }
             function updateEveryonePerms() {
                 var xmlHttp = new XMLHttpRequest();
@@ -97,34 +97,47 @@
                     cont = confirm("Warning: Allowing everyone to modify your to-do lists can lead to unwanted changes. It is recommended to set this to 'View' or 'None'.");
                 }
                 if (cont) {
-                    xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                    xmlHttp.open("POST", "{% url 'todo:update' 'setEveryonePerms' %}", true);
                     xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                    xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=updateEveryonePerms&user_id=" + {{ user.id }} + "&perms=" + perms);
+                    xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&user_id=" + {{ user.id }} + "&perms=" + perms);
                 }
             }
             function updateDisplayName() {
                 var xmlHttp = new XMLHttpRequest();
                 var display_name = document.getElementById('display_name').value;
-                xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                xmlHttp.open("POST", "{% url 'todo:update' 'setDisplayName' %}", true);
                 xmlHttp.onreadystatechange = () => {
                     if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
                         location.reload();
                 }
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=setDisplayName&user_id=" + {{ user.id }} + "&display_name=" + display_name);
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&user_id=" + {{ user.id }} + "&display_name=" + display_name);
             }
             function setEmail() {
                 email = prompt("Please enter your email address:");
                 if (email != null) {
                     var xmlHttp = new XMLHttpRequest();
-                    xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                    xmlHttp.open("POST", "{% url 'todo:update' 'setEmail' %}", true);
                     xmlHttp.onreadystatechange = () => {
                         if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
                             alert("Email updated successfully.");
                     }
                     xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                    xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=setEmail&user_id=" + {{ user.id }} + "&email=" + email);
+                    xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&user_id=" + {{ user.id }} + "&email=" + email);
                 }
+            }
+            function deleteUser() {
+                if (!confirm("Are you sure you want to delete this user?")) return;
+                if (!confirm("Are you really, really sure?")) return;
+                if (!confirm("Are you absolutely, positively 100% sure? THERE IS NO GOING BACK AFTER YOU HIT CONFIRM.")) return;
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open("POST", "{% url 'todo:update' 'deleteUser' %}", true);
+                xmlHttp.onreadystatechange = () => {
+                    if (xmlHttp.readyState == 4 && xmlHttp.status == 200) 
+                        window.location.assign(xmlHttp.responseURL);
+                }
+                xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&user_id={{ user.id }}");
             }
         </script>
         <h1>{{ user.display_name }}'s Profile</h1>
@@ -135,6 +148,7 @@
             <button onclick="logout()">Log out</button>
             <button onclick="changePassword()">Change Password</button>
             <button onclick="setEmail()">Set Email</button>
+            <button onclick="deleteUser()">Delete User</button>
         </p>
         {% endif %}
         <h2><a href="{% url 'todo:todolist' user.id %}">To-Do List</a></h2>
@@ -149,7 +163,7 @@
         {% if self == user %}
         <h2>Friends</h2>
         <input id="add_friend">
-        <button onclick="addFriend(getFriendId())">Add Friend</button>
+        <button onclick="addFriend(getFriendName())">Add Friend</button>
         <ul>
         {% for request in friend_requests %}
             <li>{{ request.display_name }}<button onclick="cancelFriendRequest({{ request.id }})">Cancel</button></li>
