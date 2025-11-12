@@ -2,11 +2,8 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from .models import Todo_User, Team
 
-# Create your tests here.
-
 class TeamModelTests(TestCase):
     def test_team_creation(self):
-        # Test creating a team and adding members and leaders
         team = Team.objects.create(name="Test Team")
         user1 = Todo_User.objects.create(username="user1")
         user2 = Todo_User.objects.create(username="user2")
@@ -16,14 +13,31 @@ class TeamModelTests(TestCase):
         self.assertIn(user2, team.leaders.all())
     
     def test_unique_team_name(self):
-        # Test that team names must be unique
         Team.objects.create(name="Unique Team")
         with self.assertRaises(Exception):
             Team.objects.create(name="Unique Team")
 
+    def test_view_team(self):
+        team = Team.objects.create(name="Team")
+        user1 = Todo_User.objects.create(username="member")
+        user2 = Todo_User.objects.create(username="nonmember")
+        team.members.add(user1)
+
+        response = self.client.get(f'/todo/team/{team.id}/')
+        self.assertEqual(response.status_code, 403)
+
+        self.user = User.objects.create_user(username="nonmember", password='12345')
+        self.client.login(username="nonmember", password="12345")
+        response = self.client.get(f'/todo/team/{team.id}/')
+        self.assertEqual(response.status_code, 403)
+
+        self.user = User.objects.create_user(username="member", password='12345')
+        self.client.login(username="member", password="12345")
+        response = self.client.get(f'/todo/team/{team.id}/')
+        self.assertEqual(response.status_code, 200)
+
 class UserModelTests(TestCase):
     def test_friend_requests(self):
-        # Test sending and receiving friend requests
         user1 = Todo_User.objects.create(username="user1")
         user2 = Todo_User.objects.create(username="user2")
         user1.friend_requests.add(user2)
@@ -63,21 +77,21 @@ class PermissionsTests(TestCase):
         self.assertEqual(response.status_code, 201)
     
     def test_view_everyone_permission(self):
-        user = Todo_User.objects.create(username="user", friend_perms="P", everyone_perms="V")
+        user = Todo_User.objects.create(username="user", everyone_perms="V")
         response = self.client.get(f'/todo/todolist/{user.id}/')
         self.assertEqual(response.status_code, 200)
         response = self.client.post(f'/todo/update/add/', "user_id=" + str(user.id) + "&name=test&description=&category_id=-1", content_type="application/x-www-form-urlencoded")
         self.assertEqual(response.status_code, 403)
 
     def test_no_everyone_permission(self):
-        user = Todo_User.objects.create(username="user", friend_perms="P", everyone_perms="P")
+        user = Todo_User.objects.create(username="user", everyone_perms="P")
         response = self.client.get(f'/todo/todolist/{user.id}/')
         self.assertEqual(response.status_code, 403)
         response = self.client.post(f'/todo/update/add/', "user_id=" + str(user.id) + "&name=test&description=&category_id=-1", content_type="application/x-www-form-urlencoded")
         self.assertEqual(response.status_code, 403)
 
     def test_modify_everyone_permission(self):
-        user = Todo_User.objects.create(username="user", friend_perms="P", everyone_perms="M")
+        user = Todo_User.objects.create(username="user", everyone_perms="M")
         response = self.client.get(f'/todo/todolist/{user.id}/')
         self.assertEqual(response.status_code, 200)
         response = self.client.post(f'/todo/update/add/', "user_id=" + str(user.id) + "&name=test&description=&category_id=-1", content_type="application/x-www-form-urlencoded")
