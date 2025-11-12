@@ -99,12 +99,6 @@
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
                 let name = document.getElementById('name').value;
                 let description = document.getElementById('description').value;
-                if (name === "") {
-                    name = "empty";
-                }
-                if (description === "") {
-                    description = "empty";
-                }
                 xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&item_id=" + item_id + "&name=" + name + "&description=" + description);
                 document.getElementById('name').remove();
                 document.getElementById('description').remove();
@@ -113,6 +107,15 @@
             }
         </script>
         <h1>{{ team.name }}</h1>
+        <h2>Leaders</h2>
+        <ul>
+            {% for leader in team.leaders.all %}
+                <li><a href="{% url 'todo:user' leader.id %}">{{ leader.username }}</a></li>
+            {% endfor %}
+        </ul>
+        {% if leader %}
+            <button onclick="addLeader()">Add leader</button>
+        {% endif %}
         <h2>Members</h2>
         <ul>
             {% for member in team.members.all %}
@@ -121,14 +124,9 @@
                 <li>No members in this team.</li>
             {% endfor %}
         </ul>
-        <h2>Leaders</h2>
-        <ul>
-            {% for leader in team.leaders.all %}
-                <li>{{ leader.username }}</li>
-            {% empty %}
-                <li>No leaders in this team.</li>
-            {% endfor %}
-        </ul>
+        {% if leader %}
+            <button onclick="addMember()">Add member</button>
+        {% endif %}
         <h2>Todo Items</h2>
         <ul>
             {% for item in todo_items %}

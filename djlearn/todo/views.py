@@ -48,7 +48,7 @@ def check_modify_permission(user, self):
     elif self in user.friends.all() and user.friend_perms == 'M':
         return True
     return False
-def update(request, action) -> HttpResponse:
+def update(request, action) -> HttpResponse | HttpResponseRedirect:
     # CSRF validation does not like any methods that aren't POST, so I just use that for everything
     if request.method == 'POST':
         if action == 'toggle':
@@ -268,8 +268,12 @@ def team(request, pk):
     team = get_object_or_404(Team, pk=pk)
     members = team.members.all()
     leaders = team.leaders.all()
+    user = get_object_or_404(Todo_User, username=request.user.username) if request.user.is_authenticated else None
+    if not user in team.members.all() and not user in team.leaders.all():
+        return HttpResponse("You do not have permission to view this team.", status=403)
     todo_items = TodoItem.objects.filter(category=team)
-    return render(request, 'todo/team.html', {'team': team, 'members': members, 'leaders': leaders, 'todo_items': todo_items})
+    leader = user in team.leaders.all()
+    return render(request, 'todo/team.html', {'team': team, 'members': members, 'leaders': leaders, 'todo_items': todo_items, 'user': user, 'leader': leader})
 
 def signup(request):
     if request.method == 'POST':
