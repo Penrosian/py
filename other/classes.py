@@ -165,5 +165,18 @@ class Polynomial:
                     terms.append(f"{coeff}x^{power}" if coeff != 1 else f"x^{power}")
         return " + ".join(terms) if terms else "0"
 
+class Fraction:
+    """
+      >>> f1 = Fraction()
+      >>> print(f1)
+      0/1
+    """
+    def __init__(self, numerator: int = 0, denominator: int = 1):
+        self.numerator = numerator
+        self.denominator = denominator
+
+    def __str__(self):
+        return f"{self.numerator}/{self.denominator}"
+
 if __name__ == "__main__":
     doctest.testmod()
