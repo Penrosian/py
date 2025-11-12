@@ -210,6 +210,18 @@ def update(request, action) -> HttpResponse:
                 return HttpResponse("Display name updated successfully", status=200)
             except (KeyError, ValueError):
                 return HttpResponse("Invalid data provided", status=400)
+        elif action == 'createTeam':
+            try:
+                user = get_object_or_404(Todo_User, username=request.user.username)
+                team_name = request.POST['team_name']
+                team = Team(name=team_name)
+                team.save()
+                team.leaders.add(user)
+                team.save()
+                return HttpResponseRedirect(reverse('todo:team', args=(team.id,)))
+            except (KeyError, ValueError) as e:
+                print(e)
+                return HttpResponse("Invalid data provided", status=400)
         else:
             return HttpResponse("Invalid action", status=400)
     else:
@@ -235,6 +247,7 @@ def edit(request, pk):
 def user(request, pk):
     user = get_object_or_404(Todo_User, pk=pk)
     categories = Team.objects.filter(members=user)
+    categories = categories.union(Team.objects.filter(leaders=user))
     friend_requests = Todo_User.objects.filter(friend_requests=user)
     incoming_requests = user.friend_requests.all()
     friends = user.friends.all()

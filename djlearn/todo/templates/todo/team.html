@@ -18,9 +18,9 @@
                     if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
                         location.reload();
                 }
-                xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                xmlHttp.open("POST", "{% url 'todo:update' 'delete' %}", true);
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=delete&item_id=" + item_id);
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&item_id=" + item_id);
             }
             function reset() {
                 try {
@@ -50,7 +50,7 @@
             }
             function addItem() {
                 var xmlHttp = new XMLHttpRequest();
-                xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                xmlHttp.open("POST", "{% url 'todo:update' 'add' %}", true);
                 xmlHttp.onreadystatechange = () => {
                     if (xmlHttp.readyState == 4 && xmlHttp.status == 201)
                         location.reload();
@@ -64,7 +64,7 @@
                     description = "empty";
                 }
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=add&user_id=" + {{ user.id }} + "&name=" + name + "&description=" + description);
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&user_id=" + {{ user.id }} + "&name=" + name + "&description=" + description);
             }
             function startEditItem(item_id) {
                 reset();
@@ -91,7 +91,7 @@
             }
             function editItem(item_id) {
                 var xmlHttp = new XMLHttpRequest();
-                xmlHttp.open("POST", "{% url 'todo:update' %}", true);
+                xmlHttp.open("POST", "{% url 'todo:update' 'edit' %}", true);
                 xmlHttp.onreadystatechange = () => {
                     if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
                         location.reload();
@@ -105,7 +105,7 @@
                 if (description === "") {
                     description = "empty";
                 }
-                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&action=edit&item_id=" + item_id + "&name=" + name + "&description=" + description);
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&item_id=" + item_id + "&name=" + name + "&description=" + description);
                 document.getElementById('name').remove();
                 document.getElementById('description').remove();
                 document.getElementById('submitButton').remove();

@@ -139,6 +139,18 @@
                 xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
                 xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&user_id={{ user.id }}");
             }
+            function createTeam() {
+                let teamName = prompt("Enter a name for your new team:");
+                if (teamName == null || teamName == "") return;
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.open("POST", "{% url 'todo:update' 'createTeam' %}", true);
+                xmlHttp.onreadystatechange = () => {
+                    if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                        window.location.assign(xmlHttp.responseURL);
+                }
+                xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+                xmlHttp.send("csrfmiddlewaretoken=" + csrfToken + "&team_name=" + teamName);
+            }
         </script>
         <h1>{{ user.display_name }}'s Profile</h1>
         <h5>({{user.username}})</h5>
@@ -152,14 +164,15 @@
         </p>
         {% endif %}
         <h2><a href="{% url 'todo:todolist' user.id %}">To-Do List</a></h2>
-        {% if categories %}
         <h2>Teams</h2>
         <ul>
             {% for category in categories %}
             <li><a href="{% url 'todo:team' category.id %}">{{ category.name }}</a></li>
+            {% empty %}
+            <li>Not in any teams.</li>
             {% endfor %}
         </ul>
-        {% endif %}
+        <button onclick="createTeam()">Create New Team</button>
         {% if self == user %}
         <h2>Friends</h2>
         <input id="add_friend">
