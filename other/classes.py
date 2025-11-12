@@ -1,4 +1,5 @@
 import doctest
+import math
 
 # Set 0
 class NumberSet:
@@ -182,6 +183,12 @@ class Fraction:
       >>> f5 = Fraction(7, 5)
       >>> print(f5)
       7/5
+      >>> f6 = Fraction(12, 16)
+      >>> print(f6)
+      3/4
+      >>> f7 = Fraction(60, 84)
+      >>> print(f7)
+      5/7
     """
     def __init__(self, numerator: int = 0, denominator: int = 1):
         self.numerator = numerator
@@ -191,8 +198,11 @@ class Fraction:
         value = self.numerator / self.denominator
         if value % 1 == 0:
             return str(int(value))
-        else:
-            return f"{self.numerator}/{self.denominator}"
+        gcd = math.gcd(self.numerator, self.denominator)
+        self.numerator //= gcd
+        self.denominator //= gcd
+        return f"{self.numerator}/{self.denominator}"
+    
 
 if __name__ == "__main__":
     doctest.testmod()
