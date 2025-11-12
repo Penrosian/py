@@ -1,5 +1,6 @@
 import doctest
 
+# Set 0
 class NumberSet:
     """
       >>> nums = NumberSet([2, 4, 6])
@@ -56,53 +57,6 @@ class NumberSet:
         max_freq = max(frequency.values())
         modes = [num for num, freq in frequency.items() if freq == max_freq]
         return modes
-    
-class Student:
-    """
-      >>> student = Student('Gizelle', 'Day', 11)
-      >>> student.fname
-      'Gizelle'
-      >>> student.lname
-      'Day'
-      >>> student.grade
-      11
-    """
-    def __init__(self, fname: str, lname: str, grade: int):
-        self.fname = fname
-        self.lname = lname
-        self.grade = grade
-
-class Polynomial:
-    """
-      >>> p1 = Polynomial()
-      >>> print(p1)
-      0
-      >>> p2 = Polynomial([3, 1, 5])
-      >>> print(p2)
-      3x^2 + x + 5
-      >>> p3 = Polynomial([2, 3, 1, 5])
-      >>> print(p3)
-      2x^3 + 3x^2 + x + 5
-      >>> p4 = Polynomial([2, 0, 3, 7, 2])
-      >>> print(p4)
-      2x^4 + 3x^2 + 7x + 2
-    """
-    def __init__(self, coefficients: list[float] = [0]):
-        self.coefficients = coefficients
-
-    def __str__(self):
-        terms = []
-        degree = len(self.coefficients) - 1
-        for i, coeff in enumerate(self.coefficients):
-            power = degree - i
-            if coeff != 0:
-                if power == 0:
-                    terms.append(f"{coeff}")
-                elif power == 1:
-                    terms.append(f"{coeff}x" if coeff != 1 else "x")
-                else:
-                    terms.append(f"{coeff}x^{power}" if coeff != 1 else f"x^{power}")
-        return " + ".join(terms) if terms else "0"
 
 class Time:
     """
@@ -162,6 +116,54 @@ def increment(time: Time, seconds: int) -> Time:
     time_minutes = time_minutes % 60
 
     return Time(time_hours, time_minutes, time_seconds)
+
+# Set 1
+class Student:
+    """
+      >>> student = Student('Gizelle', 'Day', 11)
+      >>> student.fname
+      'Gizelle'
+      >>> student.lname
+      'Day'
+      >>> student.grade
+      11
+    """
+    def __init__(self, fname: str, lname: str, grade: int):
+        self.fname = fname
+        self.lname = lname
+        self.grade = grade
+
+class Polynomial:
+    """
+      >>> p1 = Polynomial()
+      >>> print(p1)
+      0
+      >>> p2 = Polynomial([3, 1, 5])
+      >>> print(p2)
+      3x^2 + x + 5
+      >>> p3 = Polynomial([2, 3, 1, 5])
+      >>> print(p3)
+      2x^3 + 3x^2 + x + 5
+      >>> p4 = Polynomial([2, 0, 3, 7, 2])
+      >>> print(p4)
+      2x^4 + 3x^2 + 7x + 2
+    """
+    def __init__(self, coefficients: list[float] = [0]):
+        self.coefficients = coefficients
+
+    def __str__(self):
+        terms = []
+        degree = len(self.coefficients) - 1
+        for i, coeff in enumerate(self.coefficients):
+            power = degree - i
+            if coeff != 0:
+                if power == 0:
+                    terms.append(f"{coeff}")
+                elif power == 1:
+                    terms.append(f"{coeff}x" if coeff != 1 else "x")
+                else:
+                    terms.append(f"{coeff}x^{power}" if coeff != 1 else f"x^{power}")
+        return " + ".join(terms) if terms else "0"
 
 if __name__ == "__main__":
     doctest.testmod()
