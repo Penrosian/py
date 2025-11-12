@@ -169,14 +169,17 @@ class Fraction:
     """
       >>> f1 = Fraction()
       >>> print(f1)
-      0/1
+      0
+      >>> f2 = Fraction(5)
+      >>> print(f2)
+      5
     """
     def __init__(self, numerator: int = 0, denominator: int = 1):
         self.numerator = numerator
         self.denominator = denominator
 
     def __str__(self):
-        return f"{self.numerator}/{self.denominator}"
+        return str(self.numerator)
 
 if __name__ == "__main__":
     doctest.testmod()
