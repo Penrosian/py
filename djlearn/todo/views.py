@@ -261,7 +261,8 @@ def team(request, pk):
 def signup(request):
     if request.method == 'POST':
         signup = SignUpView.as_view()(request)
-        Todo_User.objects.create(username=request.POST['username'], display_name=request.POST['username'])
+        if signup.status_code == 302:
+            Todo_User.objects.create(username=request.POST['username'], display_name=request.POST['username'])
         return signup
     else:
         return HttpResponse(status=405)
