@@ -51,11 +51,12 @@ def check_modify_permission(user, self):
 def update(request, action) -> HttpResponse | HttpResponseRedirect:
     # CSRF validation does not like any methods that aren't POST, so I just use that for everything
     if request.method == 'POST':
+        user = get_object_or_404(Todo_User, username=request.user.username) if request.user.is_authenticated else None
         if action == 'toggle':
             try:
                 item_id = int(request.POST["item_id"])
                 item = get_object_or_404(TodoItem, pk=item_id)
-                if not check_modify_permission(item.user, get_object_or_404(Todo_User, username=request.user.username)):
+                if not check_modify_permission(item.user, user):
                     return HttpResponse("You do not have permission to modify this user's todo list.", status=403)
                 item.completed = not item.completed
                 item.save()
@@ -66,7 +67,7 @@ def update(request, action) -> HttpResponse | HttpResponseRedirect:
             try:
                 item_id = int(request.POST["item_id"])
                 item = get_object_or_404(TodoItem, pk=item_id)
-                if not check_modify_permission(item.user, get_object_or_404(Todo_User, username=request.user.username) if request.user.is_authenticated else None):
+                if not check_modify_permission(item.user, user):
                     return HttpResponse("You do not have permission to modify this user's todo list.", status=403)
                 item.name = request.POST['name']
                 item.description = request.POST['description']
@@ -77,13 +78,13 @@ def update(request, action) -> HttpResponse | HttpResponseRedirect:
         elif action == 'add':
             try:
                 user_id = int(request.POST["user_id"])
-                user = get_object_or_404(Todo_User, pk=user_id)
-                if not check_modify_permission(user, get_object_or_404(Todo_User, username=request.user.username) if request.user.is_authenticated else None):
+                item_user = get_object_or_404(Todo_User, pk=user_id)
+                if not check_modify_permission(item_user, user):
                     return HttpResponse("You do not have permission to modify this user's todo list.", status=403)
                 category_id = int(request.POST["category_id"])
                 name = request.POST['name']
                 description = request.POST['description']
-                new_item = TodoItem(user=user, name=name, description=description, category=Team.objects.get(pk=category_id) if category_id != -1 else None)
+                new_item = TodoItem(user=item_user, name=name, description=description, category=Team.objects.get(pk=category_id) if category_id != -1 else None)
                 new_item.save()
                 return HttpResponse("Item added successfully", status=201)
             except (KeyError, ValueError):
@@ -92,7 +93,7 @@ def update(request, action) -> HttpResponse | HttpResponseRedirect:
             try:
                 item_id = int(request.POST['item_id'])
                 item = get_object_or_404(TodoItem, pk=item_id)
-                if not check_modify_permission(item.user, get_object_or_404(Todo_User, username=request.user.username) if request.user.is_authenticated else None):
+                if not check_modify_permission(item.user, user):
                     return HttpResponse("You do not have permission to modify this user's todo list.", status=403)
                 item.delete()
                 return HttpResponse("Item deleted successfully", status=200)
@@ -101,16 +102,15 @@ def update(request, action) -> HttpResponse | HttpResponseRedirect:
         elif action == 'deleteUser':
             try:
                 user_id = int(request.POST['user_id'])
-                user = get_object_or_404(Todo_User, pk=user_id)
-                if not user == get_object_or_404(Todo_User, username=request.user.username):
+                delete_user = get_object_or_404(Todo_User, pk=user_id)
+                if not delete_user == user:
                     return HttpResponse("Can only delete self", status=403)
-                user.delete()
+                delete_user.delete()
                 return HttpResponseRedirect(reverse('todo:index'))
             except (KeyError, ValueError):
                 return HttpResponse("Invalid user ID", status=400)
         elif action == 'addFriend':
             try:
-                user = get_object_or_404(Todo_User, username=request.user.username)
                 friend_name = request.POST['friend_name']
                 friend = get_object_or_404(Todo_User, username=friend_name)
                 if friend == user:
@@ -126,7 +126,6 @@ def update(request, action) -> HttpResponse | HttpResponseRedirect:
                 return HttpResponse("Invalid data provided", status=400)
         elif action == 'acceptFriend':
             try:
-                user = get_object_or_404(Todo_User, username=request.user.username)
                 friend_id = int(request.POST['friend_id'])
                 friend = get_object_or_404(Todo_User, pk=friend_id)
                 if friend not in user.friend_requests.all():
@@ -139,7 +138,6 @@ def update(request, action) -> HttpResponse | HttpResponseRedirect:
                 return HttpResponse("Invalid data provided", status=400)
         elif action == 'removeFriend':
             try:
-                user = get_object_or_404(Todo_User, username=request.user.username)
                 friend_id = int(request.POST['friend_id'])
                 friend = get_object_or_404(Todo_User, pk=friend_id)
                 if friend not in user.friends.all():
@@ -151,7 +149,6 @@ def update(request, action) -> HttpResponse | HttpResponseRedirect:
                 return HttpResponse("Invalid data provided", status=400)
         elif action == 'declineFriend':
             try:
-                user = get_object_or_404(Todo_User, username=request.user.username)
                 friend_id = int(request.POST['friend_id'])
                 friend = get_object_or_404(Todo_User, pk=friend_id)
                 if friend not in user.friend_requests.all():
@@ -163,7 +160,6 @@ def update(request, action) -> HttpResponse | HttpResponseRedirect:
                 return HttpResponse("Invalid data provided", status=400)
         elif action == 'cancelFriendRequest':
             try:
-                user = get_object_or_404(Todo_User, username=request.user.username)
                 friend_id = int(request.POST['friend_id'])
                 friend = get_object_or_404(Todo_User, pk=friend_id)
                 if user not in friend.friend_requests.all():
@@ -175,7 +171,6 @@ def update(request, action) -> HttpResponse | HttpResponseRedirect:
                 return HttpResponse("Invalid data provided", status=400)
         elif action == 'setFriendPerms':
             try:
-                user = get_object_or_404(Todo_User, username=request.user.username)
                 perms = request.POST['perms']
                 if perms not in ['P', 'V', 'M']:
                     return HttpResponse("Invalid permissions value", status=400)
@@ -186,7 +181,6 @@ def update(request, action) -> HttpResponse | HttpResponseRedirect:
                 return HttpResponse("Invalid data provided", status=400)
         elif action == 'setEveryonePerms':
             try:
-                user = get_object_or_404(Todo_User, username=request.user.username)
                 perms = request.POST['perms']
                 if perms not in ['P', 'V', 'M']:
                     return HttpResponse("Invalid permissions value", status=400)
@@ -204,7 +198,6 @@ def update(request, action) -> HttpResponse | HttpResponseRedirect:
                 return HttpResponse("Invalid data provided", status=400)
         elif action == 'setDisplayName':
             try:
-                user = get_object_or_404(Todo_User, username=request.user.username)
                 user.display_name = request.POST['display_name']
                 user.save()
                 return HttpResponse("Display name updated successfully", status=200)
@@ -212,7 +205,6 @@ def update(request, action) -> HttpResponse | HttpResponseRedirect:
                 return HttpResponse("Invalid data provided", status=400)
         elif action == 'createTeam':
             try:
-                user = get_object_or_404(Todo_User, username=request.user.username)
                 team_name = request.POST['team_name']
                 team = Team(name=team_name)
                 team.save()
