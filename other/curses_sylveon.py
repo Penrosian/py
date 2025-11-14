@@ -47,7 +47,10 @@ def main(stdscr):
     curses.init_color(4, 114, 600, 953)
     curses.init_color(5, 816, 816, 816)
 
-for s in sylveon:
-    print(s)
+    curses.init_pair(1, 1, curses.COLOR_BLACK)
+    curses.init_pair(2, 2, curses.COLOR_BLACK)
+    curses.init_pair(3, 3, curses.COLOR_BLACK)
+    curses.init_pair(4, 4, curses.COLOR_BLACK)
+    curses.init_pair(5, 5, curses.COLOR_BLACK)
 
 curses.wrapper(main)
