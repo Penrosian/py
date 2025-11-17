@@ -43,11 +43,11 @@ def main(stdscr):
     stdscr.clear()
 
     curses.start_color()
-    curses.init_color(1, 1000, 1000, 1000)
-    curses.init_color(2, 937, 604, 675)
-    curses.init_color(3, 616, 875, 980)
-    curses.init_color(4, 114, 600, 953)
-    curses.init_color(5, 816, 816, 816)
+    curses.init_color(1, 1000, 1000, 1000) # White
+    curses.init_color(2, 937, 604, 675) # Pink
+    curses.init_color(3, 616, 875, 980) # Light Blue
+    curses.init_color(4, 114, 600, 953) # Blue
+    curses.init_color(5, 816, 816, 816) # Light Gray
 
     curses.init_pair(1, 1, curses.COLOR_BLACK)
     curses.init_pair(2, 2, curses.COLOR_BLACK)
