@@ -1,7 +1,7 @@
 import curses
 
 def print(string, /, *args, end="\n"):
-    with open("/tmp/debug_pipe", "w") as f:
+    with open("/tmp/debug_pipe", "a") as f:
         f.write(str(string))
         for s in args:
             f.write(" " + str(s))
