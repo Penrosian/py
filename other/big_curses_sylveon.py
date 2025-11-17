@@ -110,7 +110,6 @@ sylveon = [
     "$1                 *=--=----+@",
     "$1                  @##++#%@",
 ]
-print(len(sylveon))
 
 def main(stdscr):
     print("============")
