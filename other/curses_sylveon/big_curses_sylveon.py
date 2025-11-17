@@ -12,7 +12,7 @@ with open("sylveon_big_colored.txt", "r") as f:
     sylveon = f.readlines()
     for i in range(len(sylveon)):
         sylveon[i] = sylveon[i].rstrip("\n")
-        sylveon[1] = "$1" + sylveon[1]
+        sylveon[i] = "$1" + sylveon[i]
 
 def main(stdscr):
     print("============")
