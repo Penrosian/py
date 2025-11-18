@@ -1,4 +1,5 @@
 import curses
+import sys
 
 def print(string, /, *args, end="\n"):
     with open("/tmp/debug_pipe", "a") as f:
@@ -8,7 +9,7 @@ def print(string, /, *args, end="\n"):
         f.write(end)
         f.flush()
 
-with open("sylveon_colored.txt", "r") as f:
+with open(sys.argv[1], "r") as f:
     sylveon = f.readlines()
     for i in range(len(sylveon)):
         sylveon[i] = sylveon[i].rstrip("\n")
