@@ -75,7 +75,7 @@ class Time:
         self.seconds = seconds
     
     def print_time(self):
-        print(f'{self.hours}:{self.minutes:02d}:{self.seconds:02d}')
+        print(f'{self.hours}:{self.minutes:02}:{self.seconds:02}')
     
     def increment(self, seconds):
         self.seconds += seconds
