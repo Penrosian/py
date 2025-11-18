@@ -78,14 +78,14 @@ class Time:
         print(f'{self.hours}:{self.minutes:02d}:{self.seconds:02d}')
     
     def increment(self, seconds):
-        self.seconds = seconds + self.seconds
-        
-        self.minutes = self.minutes + self.seconds // 60
-        self.seconds = self.seconds % 60
+        self.seconds += seconds
 
-        self.hours = self.hours + self.minutes // 60
-        self.minutes = self.minutes % 60
-    
+        self.minutes += self.seconds // 60
+        self.seconds %= 60
+
+        self.hours += self.minutes // 60
+        self.minutes %= 60
+
     def after(self, other):
         if self.hours > other.hours:
             return True
@@ -101,7 +101,7 @@ class Time:
             return True
         return False
 
-def increment(time: Time, seconds: int) -> Time:
+def increment(time, seconds):
     """
     >>> time1 = Time(1, 30, 45)
     >>> new_time = increment(time1, 20)
@@ -111,10 +111,10 @@ def increment(time: Time, seconds: int) -> Time:
     time_seconds = time.seconds + seconds
 
     time_minutes = time.minutes + time_seconds // 60
-    time_seconds = time_seconds % 60
+    time_seconds %= 60
 
     time_hours = time.hours + time_minutes // 60
-    time_minutes = time_minutes % 60
+    time_minutes %= 60
 
     return Time(time_hours, time_minutes, time_seconds)
 
