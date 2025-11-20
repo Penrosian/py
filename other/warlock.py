@@ -148,5 +148,20 @@ class Warlock:
         self.hp += 3
         self.charisma += 1
 
+    def get_info(self):
+        return f"\
+Name: {self.name}\n\
+Patron: {self.patron}\n\
+HP: {self.hp}\n\
+Spells: {self.get_spells()}\n\
+Weapon: {self.weapon}\n\
+Armor: {self.armor}\n\
+Level: {self.level}\n\
+Experience: {self.experience}\n\
+Charisma: {self.charisma}"
+
+warlock = Warlock("Gnar", "The Fiend", 35, [eldritch_blast], staff, chainmail_armor, 1, 0, 2)
+print(warlock.get_info())
+
 if __name__ == "__main__":
     doctest.testmod()
