@@ -16,10 +16,33 @@ class Spell:
 eldritch_blast = Spell("Eldritch Blast", 8)
 hex = Spell("Hex", 4)
 
+class Weapon:
+    def __init__(self, name, damage):
+        self.name = name
+        self.damage = damage
+    
+    def __str__(self):
+        return self.name
+
+dagger = Weapon("Dagger", 4)
+staff = Weapon("Staff", 6)
+
+class Armor:
+    def __init__(self, name, ap):
+        self.name = name
+        self.ap = ap
+    
+    def __str__(self):
+        return self.name
+
+leather_armor = Armor("Leather Armor", 1)
+cloth_armor = Armor("Cloth Armor", 0)
+chainmail_armor = Armor("Chainmail Armor", 3)
+
 class Warlock:
     """
-    >>> warlock1 = Warlock("Gorath", "The Fiend", 10, [eldritch_blast], ("Dagger", 4), ("Leather", 1), 1, 0, 0)
-    >>> warlock2 = Warlock("Luna", "The Archfey", 12, [eldritch_blast], ("Staff", 6), ("Cloth", 0), 1, 0, 0)
+    >>> warlock1 = Warlock("Gorath", "The Fiend", 10, [eldritch_blast], dagger, leather_armor, 1, 0, 0)
+    >>> warlock2 = Warlock("Luna", "The Archfey", 12, [eldritch_blast], staff, cloth_armor, 1, 0, 0)
     >>> print(warlock1)
     Gorath
     >>> warlock1.cast_spell("Eldritch Blast", warlock2)
@@ -31,7 +54,7 @@ class Warlock:
     >>> warlock2.attack(warlock1)
     >>> print(warlock1.hp)
     5
-    >>> warlock1.equip("armor", "Chain Mail", 3)
+    >>> warlock1.equip(chaimnail_armor)
     >>> print(warlock1.armor)
     ('Chain Mail', 3)
     >>> warlock2.attack(warlock1)
@@ -82,7 +105,7 @@ class Warlock:
         return self.name
     
     def take_damage(self, damage):
-        damage -= self.armor[1]
+        damage -= self.armor.ap
         if damage < 0:
             damage = 0
         self.hp -= damage
@@ -106,13 +129,13 @@ class Warlock:
             target.take_damage(spell.damage + self.charisma)
 
     def attack(self, target):
-        target.take_damage(self.weapon[1])
+        target.take_damage(self.weapon.damage)
     
-    def equip(self, item_type, item_name, item_value):
-        if item_type == "weapon":
-            self.weapon = (item_name, item_value)
-        elif item_type == "armor":
-            self.armor = (item_name, item_value)
+    def equip(self, item):
+        if isinstance(item, Weapon):
+            self.weapon = item
+        elif isinstance(item, Armor):
+            self.armor = item
 
     def gain_experience(self, amount):
         self.experience += amount
