@@ -15,6 +15,12 @@ class Warlock:
     >>> warlock2.attack(warlock1)
     >>> print(warlock1.hp)
     5
+    >>> warlock1.equip("armor", "Chain Mail", 3)
+    >>> print(warlock1.armor)
+    ('Chain Mail', 3)
+    >>> warlock2.attack(warlock1)
+    >>> print(warlock1.hp)
+    2
     """
     def __init__(self, name, patron, hp, spells, weapon, armor, level, experience, charisma):
         self.name = name
@@ -46,6 +52,12 @@ class Warlock:
     def attack(self, target):
         weapon_name, weapon_damage = self.weapon
         target.take_damage(weapon_damage)
+    
+    def equip(self, item_type, item_name, item_value):
+        if item_type == "weapon":
+            self.weapon = (item_name, item_value)
+        elif item_type == "armor":
+            self.armor = (item_name, item_value)
 
 if __name__ == "__main__":
     doctest.testmod()
