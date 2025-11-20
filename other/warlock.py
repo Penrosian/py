@@ -2,8 +2,8 @@ import doctest
 
 class Warlock:
     """
-    >>> warlock1 = Warlock("Gorath", "The Fiend", 10, {"Eldritch Blast": {"damage": 8}}, ("Dagger", 4), ("Leather", 1), 0, 0, 0)
-    >>> warlock2 = Warlock("Luna", "The Archfey", 12, {"Eldritch Blast": {"damage": 8}}, ("Staff", 6), ("Cloth", 0), 0, 0, 0)
+    >>> warlock1 = Warlock("Gorath", "The Fiend", 10, {"Eldritch Blast": {"damage": 8}}, ("Dagger", 4), ("Leather", 1), 1, 0, 0)
+    >>> warlock2 = Warlock("Luna", "The Archfey", 12, {"Eldritch Blast": {"damage": 8}}, ("Staff", 6), ("Cloth", 0), 1, 0, 0)
     >>> print(warlock1)
     Gorath
     >>> warlock1.cast_spell("Eldritch Blast", warlock2)
@@ -30,9 +30,26 @@ class Warlock:
     >>> warlock1.gain_experience(50)
     >>> print(warlock1.experience)
     50
+    >>> print(warlock1.level)
+    1
     >>> warlock1.gain_experience(50)
     >>> print(warlock1.experience)
     0
+    >>> print(warlock1.level)
+    2
+    >>> print(warlock1.hp)
+    13
+    >>> warlock2.hp = 20
+    >>> warlock1.cast_spell("Eldritch Blast", warlock2)
+    >>> print(warlock2.hp)
+    9
+    >>> warlock1.gain_experience(200)
+    >>> print(warlock1.charisma)
+    5
+    >>> warlock2.hp = 20
+    >>> warlock1.cast_spell("Eldritch Blast", warlock2)
+    >>> print(warlock2.hp)
+    7
     """
     def __init__(self, name, patron, hp, spells, weapon, armor, level, experience, charisma):
         self.name = name
@@ -73,8 +90,13 @@ class Warlock:
     def gain_experience(self, amount):
         self.experience += amount
         while self.experience >= 100:
-            # self.level_up()
+            self.level_up()
             self.experience -= 100
+    
+    def level_up(self):
+        self.level += 1
+        self.hp += 3
+        self.charisma += 1
 
 if __name__ == "__main__":
     doctest.testmod()
