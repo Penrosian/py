@@ -54,9 +54,9 @@ class Warlock:
     >>> warlock2.attack(warlock1)
     >>> print(warlock1.hp)
     5
-    >>> warlock1.equip(chaimnail_armor)
+    >>> warlock1.equip(chainmail_armor)
     >>> print(warlock1.armor)
-    ('Chain Mail', 3)
+    Chainmail Armor
     >>> warlock2.attack(warlock1)
     >>> print(warlock1.hp)
     2
