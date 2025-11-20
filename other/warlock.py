@@ -1,9 +1,25 @@
 import doctest
 
+class Spell:
+    """
+    >>> spell = Spell("spell", 1)
+    >>> print(spell)
+    spell
+    """
+    def __init__(self, name, damage):
+        self.name = name
+        self.damage = damage
+    
+    def __str__(self):
+        return self.name
+
+eldritch_blast = Spell("Eldritch Blast", 8)
+hex = Spell("Hex", 4)
+
 class Warlock:
     """
-    >>> warlock1 = Warlock("Gorath", "The Fiend", 10, {"Eldritch Blast": {"damage": 8}}, ("Dagger", 4), ("Leather", 1), 1, 0, 0)
-    >>> warlock2 = Warlock("Luna", "The Archfey", 12, {"Eldritch Blast": {"damage": 8}}, ("Staff", 6), ("Cloth", 0), 1, 0, 0)
+    >>> warlock1 = Warlock("Gorath", "The Fiend", 10, [eldritch_blast], ("Dagger", 4), ("Leather", 1), 1, 0, 0)
+    >>> warlock2 = Warlock("Luna", "The Archfey", 12, [eldritch_blast], ("Staff", 6), ("Cloth", 0), 1, 0, 0)
     >>> print(warlock1)
     Gorath
     >>> warlock1.cast_spell("Eldritch Blast", warlock2)
@@ -73,10 +89,21 @@ class Warlock:
         if self.hp < 0:
             self.hp = 0
     
+    def get_spells(self):
+        spells = []
+        for spell in self.spells:
+            spells.append(spell.name)
+        return spells
+    
     def cast_spell(self, spell_name, target):
-        if spell_name in self.spells:
-            spell = self.spells[spell_name]
-            target.take_damage(spell["damage"] + self.charisma)
+        spells = self.get_spells()
+        if spell_name in spells:
+            spell = None
+            for i in range(len(spells)):
+                if spell_name == spells[i]:
+                    spell = self.spells[i]
+
+            target.take_damage(spell.damage + self.charisma)
 
     def attack(self, target):
         target.take_damage(self.weapon[1])
