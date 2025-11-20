@@ -27,6 +27,12 @@ class Warlock:
     >>> warlock1.cast_spell("Eldritch Blast", warlock2)
     >>> print(warlock2.hp)
     0
+    >>> warlock1.gain_experience(50)
+    >>> print(warlock1.experience)
+    50
+    >>> warlock1.gain_experience(50)
+    >>> print(warlock1.experience)
+    0
     """
     def __init__(self, name, patron, hp, spells, weapon, armor, level, experience, charisma):
         self.name = name
@@ -63,6 +69,12 @@ class Warlock:
             self.weapon = (item_name, item_value)
         elif item_type == "armor":
             self.armor = (item_name, item_value)
+
+    def gain_experience(self, amount):
+        self.experience += amount
+        while self.experience >= 100:
+            # self.level_up()
+            self.experience -= 100
 
 if __name__ == "__main__":
     doctest.testmod()
