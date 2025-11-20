@@ -21,6 +21,12 @@ class Warlock:
     >>> warlock2.attack(warlock1)
     >>> print(warlock1.hp)
     2
+    >>> warlock1.hp = 10
+    >>> warlock2.hp = 10
+    >>> warlock1.charisma = 2
+    >>> warlock1.cast_spell("Eldritch Blast", warlock2)
+    >>> print(warlock2.hp)
+    0
     """
     def __init__(self, name, patron, hp, spells, weapon, armor, level, experience, charisma):
         self.name = name
@@ -47,7 +53,7 @@ class Warlock:
     def cast_spell(self, spell_name, target):
         if spell_name in self.spells:
             spell = self.spells[spell_name]
-            target.take_damage(spell["damage"])
+            target.take_damage(spell["damage"] + self.charisma)
 
     def attack(self, target):
         weapon_name, weapon_damage = self.weapon
