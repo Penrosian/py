@@ -56,8 +56,7 @@ class Warlock:
             target.take_damage(spell["damage"] + self.charisma)
 
     def attack(self, target):
-        weapon_name, weapon_damage = self.weapon
-        target.take_damage(weapon_damage)
+        target.take_damage(self.weapon[1])
     
     def equip(self, item_type, item_name, item_value):
         if item_type == "weapon":
