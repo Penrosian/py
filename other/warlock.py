@@ -6,7 +6,7 @@ class Spell:
     >>> print(spell)
     spell
     """
-    def __init__(self, name, damage):
+    def __init__(self, name: str, damage: int):
         self.name = name
         self.damage = damage
     
@@ -17,7 +17,7 @@ eldritch_blast = Spell("Eldritch Blast", 8)
 hex = Spell("Hex", 4)
 
 class Weapon:
-    def __init__(self, name, damage):
+    def __init__(self, name: str, damage: int):
         self.name = name
         self.damage = damage
     
@@ -28,7 +28,7 @@ dagger = Weapon("Dagger", 4)
 staff = Weapon("Staff", 6)
 
 class Armor:
-    def __init__(self, name, ap):
+    def __init__(self, name: str, ap: int):
         self.name = name
         self.ap = ap
     
@@ -90,7 +90,18 @@ class Warlock:
     >>> print(warlock2.hp)
     7
     """
-    def __init__(self, name="", patron="", hp=10, spells=[Spell("Eldritch Blast", 8)], weapon=None, armor=Armor("Cloth Armor", 0), level=1, experience=0, charisma=0):
+    def __init__(
+                self,
+                name: str = "",
+                patron: str = "",\
+                hp: int = 10,
+                spells: list[Spell] = [Spell("Eldritch Blast", 8)],
+                weapon: Weapon = Weapon("Fists", 1),
+                armor: Armor = Armor("Cloth Armor", 0),
+                level: int = 1,
+                experience: int = 0,
+                charisma: int = 0,
+                ):
         self.name = name
         self.patron = patron
         self.hp = hp
@@ -129,10 +140,7 @@ class Warlock:
             target.take_damage(spell.damage + self.charisma)
 
     def attack(self, target):
-        if self.weapon is not None:
-            target.take_damage(self.weapon.damage)
-        else:
-            target.take_damage(1)
+        target.take_damage(self.weapon.damage)
     
     def equip(self, item):
         if isinstance(item, Weapon):
