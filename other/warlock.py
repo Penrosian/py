@@ -90,7 +90,7 @@ class Warlock:
     >>> print(warlock2.hp)
     7
     """
-    def __init__(self, name, patron, hp, spells, weapon, armor, level, experience, charisma):
+    def __init__(self, name="", patron="", hp=10, spells=[Spell("Eldritch Blast", 8)], weapon=None, armor=Armor("Cloth Armor", 0), level=1, experience=0, charisma=0):
         self.name = name
         self.patron = patron
         self.hp = hp
@@ -129,7 +129,10 @@ class Warlock:
             target.take_damage(spell.damage + self.charisma)
 
     def attack(self, target):
-        target.take_damage(self.weapon.damage)
+        if self.weapon is not None:
+            target.take_damage(self.weapon.damage)
+        else:
+            target.take_damage(1)
     
     def equip(self, item):
         if isinstance(item, Weapon):
