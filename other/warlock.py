@@ -179,7 +179,8 @@ Weapon: {self.weapon}\n\
 Armor: {self.armor}\n\
 Level: {self.level}\n\
 Experience: {self.experience}\n\
-Charisma: {self.charisma}"
+Charisma: {self.charisma}\n\
+Postion: ({self.x}, {self.y})"
 
 warlock = Warlock("Gnar", "The Fiend", 35, [eldritch_blast], staff, chainmail_armor, 1, 0, 2)
 print(warlock.get_info())
