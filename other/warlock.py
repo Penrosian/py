@@ -142,12 +142,13 @@ class Warlock:
     def cast_spell(self, spell_name, target):
         spells = self.get_spells()
         if spell_name in spells:
+            spell = None
             for i in range(len(spells)):
                 if spell_name == spells[i]:
                     spell = self.spells[i]
-
-            if math.dist((self.x, self.y), (target.x, target.y)) <= spell.range: # type: ignore
-                target.take_damage(spell.damage + self.charisma) # type: ignore
+            if spell is not None:
+                if math.dist((self.x, self.y), (target.x, target.y)) <= spell.range:
+                    target.take_damage(spell.damage + self.charisma)
 
     def attack(self, target):
         target.take_damage(self.weapon.damage)
