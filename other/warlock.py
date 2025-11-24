@@ -174,7 +174,8 @@ class Warlock:
                 target.take_damage(spell.damage + self.charisma)
 
     def attack(self, target):
-        target.take_damage(self.weapon.damage)
+        if math.dist((self.x, self.y), (target.x, target.y)) <= 1:
+            target.take_damage(self.weapon.damage)
     
     def use_item(self, item_name: str):
         items = self.get_items()
