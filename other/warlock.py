@@ -308,8 +308,5 @@ Experience: {self.experience}\n\
 Charisma: {self.charisma}\n\
 Postion: ({self.x}, {self.y})"
 
-warlock = Warlock("Gnar", "The Fiend", 35, [eldritch_blast], staff, chainmail_armor, 1, 0, 2)
-print(warlock.get_info())
-
 if __name__ == "__main__":
     doctest.testmod()
