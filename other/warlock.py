@@ -146,8 +146,8 @@ class Warlock:
                 if spell_name == spells[i]:
                     spell = self.spells[i]
 
-            if math.dist((self.x, self.y), (target.x, target.y)) <= spell.range:
-                target.take_damage(spell.damage + self.charisma)
+            if math.dist((self.x, self.y), (target.x, target.y)) <= spell.range: # type: ignore
+                target.take_damage(spell.damage + self.charisma) # type: ignore
 
     def attack(self, target):
         target.take_damage(self.weapon.damage)
@@ -186,3 +186,5 @@ print(warlock.get_info())
 
 if __name__ == "__main__":
     doctest.testmod()
+
+Warlock()
