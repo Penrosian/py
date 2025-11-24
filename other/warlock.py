@@ -99,7 +99,7 @@ class Warlock:
     def __init__(
                 self,
                 name: str = "",
-                patron: str = "",\
+                patron: str = "",
                 hp: int = 10,
                 spells: list[Spell] = [Spell("Eldritch Blast", 8, 120)],
                 weapon: Weapon = Weapon("Fists", 1),
