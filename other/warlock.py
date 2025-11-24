@@ -186,5 +186,3 @@ print(warlock.get_info())
 
 if __name__ == "__main__":
     doctest.testmod()
-
-Warlock()
