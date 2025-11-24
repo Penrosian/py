@@ -2,21 +2,20 @@ import doctest
 import math
 
 class Spell:
-    """
-    >>> spell = Spell("spell", 1, 50)
-    >>> print(spell)
-    spell
-    """
-    def __init__(self, name: str, damage: int, range: int):
+    def __init__(self, name: str, damage: int, range: int, effect: str, max_targets: int = 1):
         self.name = name
         self.damage = damage
         self.range = range
+        self.effect = effect
+        self.max_targets = max_targets
     
     def __str__(self):
         return self.name
 
-eldritch_blast = Spell("Eldritch Blast", 8, 120)
-hex = Spell("Hex", 4, 90)
+eldritch_blast = Spell("Eldritch Blast", 8, 120, "damage")
+hex = Spell("Hex", 4, 90, "damage")
+cure_wounds = Spell("Cure Wounds", 6, 1, "heal")
+mass_cure_wounds = Spell("Mass Cure Wounds", 10, 60, "heal", 6)
 
 class Weapon:
     def __init__(self, name: str, damage: int):
@@ -122,13 +121,30 @@ class Warlock:
     15
     >>> print(warlock2.get_items())
     []
+    >>> warlock3 = Warlock("Mira", "The Great Old One", 8, [mass_cure_wounds, cure_wounds], dagger, cloth_armor, 1, 0, 0)
+    >>> warlock1.max_hp = 30
+    >>> warlock1.hp = 13
+    >>> warlock2.hp = 10
+    >>> warlock2.x = 0
+    >>> warlock3.cast_spell("Mass Cure Wounds", [warlock1, warlock2])
+    >>> print(warlock1.hp)
+    23
+    >>> print(warlock2.hp)
+    15
+    >>> warlock1.x = 3
+    >>> warlock3.cast_spell("Cure Wounds", warlock1)
+    >>> print(warlock1.hp)
+    23
+    >>> warlock3.attack(warlock1)
+    >>> print(warlock1.hp)
+    23
     """
     def __init__(
                 self,
                 name: str = "",
                 patron: str = "",
                 hp: int = 10,
-                spells: list[Spell] = [Spell("Eldritch Blast", 8, 120)],
+                spells: list[Spell] = [Spell("Eldritch Blast", 8, 120, "damage")],
                 weapon: Weapon = Weapon("Fists", 1),
                 armor: Armor = Armor("Cloth Armor", 0),
                 level: int = 1,
@@ -163,15 +179,29 @@ class Warlock:
         if self.hp < 0:
             self.hp = 0
     
-    def cast_spell(self, spell_name, target):
+    def heal(self, amount: int):
+        self.hp += amount
+        if self.hp > self.max_hp:
+            self.hp = self.max_hp
+    
+    def cast_spell(self, spell_name, targets):
         spells = self.get_spells()
         spell = None
         for i in range(len(spells)):
             if spell_name == spells[i]:
                 spell = self.spells[i]
         if spell is not None:
-            if math.dist((self.x, self.y), (target.x, target.y)) <= spell.range:
-                target.take_damage(spell.damage + self.charisma)
+            if not isinstance(targets, list):
+                targets = [targets]
+            if len(targets) >= spell.max_targets:
+                targets = targets[:spell.max_targets]
+            for target in targets:
+                if math.dist((self.x, self.y), (target.x, target.y)) <= spell.range:
+                    match spell.effect:
+                        case "damage":
+                            target.take_damage(spell.damage + self.charisma)
+                        case "heal":
+                            target.heal(spell.damage + self.charisma)
 
     def attack(self, target):
         if math.dist((self.x, self.y), (target.x, target.y)) <= 1:
