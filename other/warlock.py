@@ -1,20 +1,22 @@
 import doctest
+import math
 
 class Spell:
     """
-    >>> spell = Spell("spell", 1)
+    >>> spell = Spell("spell", 1, 50)
     >>> print(spell)
     spell
     """
-    def __init__(self, name: str, damage: int):
+    def __init__(self, name: str, damage: int, range: int):
         self.name = name
         self.damage = damage
+        self.range = range
     
     def __str__(self):
         return self.name
 
-eldritch_blast = Spell("Eldritch Blast", 8)
-hex = Spell("Hex", 4)
+eldritch_blast = Spell("Eldritch Blast", 8, 120)
+hex = Spell("Hex", 4, 90)
 
 class Weapon:
     def __init__(self, name: str, damage: int):
@@ -89,18 +91,24 @@ class Warlock:
     >>> warlock1.cast_spell("Eldritch Blast", warlock2)
     >>> print(warlock2.hp)
     7
+    >>> warlock2.x = 200
+    >>> warlock1.cast_spell("Eldritch Blast", warlock2)
+    >>> print(warlock2.hp)
+    7
     """
     def __init__(
                 self,
                 name: str = "",
                 patron: str = "",\
                 hp: int = 10,
-                spells: list[Spell] = [Spell("Eldritch Blast", 8)],
+                spells: list[Spell] = [Spell("Eldritch Blast", 8, 120)],
                 weapon: Weapon = Weapon("Fists", 1),
                 armor: Armor = Armor("Cloth Armor", 0),
                 level: int = 1,
                 experience: int = 0,
                 charisma: int = 0,
+                x: int = 0,
+                y: int = 0,
                 ):
         self.name = name
         self.patron = patron
@@ -111,6 +119,8 @@ class Warlock:
         self.level = level
         self.experience = experience
         self.charisma = charisma
+        self.x = x
+        self.y = y
 
     def __str__(self):
         return self.name
@@ -132,12 +142,12 @@ class Warlock:
     def cast_spell(self, spell_name, target):
         spells = self.get_spells()
         if spell_name in spells:
-            spell = None
             for i in range(len(spells)):
                 if spell_name == spells[i]:
                     spell = self.spells[i]
 
-            target.take_damage(spell.damage + self.charisma)
+            if math.dist((self.x, self.y), (target.x, target.y)) <= spell.range:
+                target.take_damage(spell.damage + self.charisma)
 
     def attack(self, target):
         target.take_damage(self.weapon.damage)
