@@ -53,7 +53,114 @@ small_healing_potion = Item("Small Healing Potion", "heal", 3)
 healing_potion = Item("Healing Potion", "heal", 7)
 big_healing_potion = Item("Big Healing Potion", "heal", 10)
 
-class Warlock:
+class Entity:
+    def __init__(self,
+                 name: str = "",
+                 hp: int = 10,
+                 x: int = 0,
+                 y: int = 0
+                 ):
+        self.name = name
+        self.hp = hp
+        self.max_hp = hp
+        self.x = x
+        self.y = y
+
+    def __str__(self):
+        return self.name
+    
+    def take_damage(self, damage: int):
+        if damage < 0:
+            damage = 0
+        self.hp -= damage
+        if self.hp < 0:
+            self.hp = 0
+    
+    def heal(self, amount: int):
+        self.hp += amount
+        if self.hp > self.max_hp:
+            self.hp = self.max_hp
+
+class Hero(Entity):
+    def __init__(self,
+                 name: str = "",
+                 hp: int = 10,
+                 weapon: Weapon = Weapon("Fists", 1),
+                 armor: Armor = Armor("Cloth Armor", 0),
+                 level: int = 1,
+                 experience: int = 0,
+                 x: int = 0,
+                 y: int = 0,
+                 inventory: list[Item] = []
+                 ):
+        super().__init__(name, hp, x, y)
+        self.weapon = weapon
+        self.armor = armor
+        self.level = level
+        self.experience = experience
+        self.inventory = inventory
+    
+    def take_damage(self, damage: int):
+        damage -= self.armor.ap
+        if damage < 0:
+            damage = 0
+        self.hp -= damage
+        if self.hp < 0:
+            self.hp = 0
+    
+    def use_item(self, item_name: str):
+        items = self.get_items()
+        item = None
+        for i in range(len(items)):
+            if item_name == items[i]:
+                item = self.inventory[i]
+        if item is not None:
+            if item.effect == "heal":
+                self.hp += item.value
+                if self.hp > self.max_hp:
+                    self.hp = self.max_hp
+                self.inventory.remove(item)
+    
+    def equip(self, item: Weapon | Armor):
+        if isinstance(item, Weapon):
+            self.weapon = item
+        elif isinstance(item, Armor):
+            self.armor = item
+
+    def attack(self, target: Entity):
+        if math.dist((self.x, self.y), (target.x, target.y)) <= 1:
+            target.take_damage(self.weapon.damage)
+
+    def gain_experience(self, amount: int):
+        self.experience += amount
+        while self.experience >= 100:
+            self.level_up()
+            self.experience -= 100
+    
+    def level_up(self):
+        self.level += 1
+        self.max_hp += 3
+        self.hp = self.max_hp
+        self.charisma += 1
+    
+    def get_items(self):
+        items: list[str] = []
+        for item in self.inventory:
+            items.append(item.name)
+        return items
+    
+    def get_info(self):
+        return f"\
+Name: {self.name}\n\
+HP: {self.hp}\n\
+Weapon: {self.weapon}\n\
+Armor: {self.armor}\n\
+Level: {self.level}\n\
+Experience: {self.experience}\n\
+Charisma: {self.charisma}\n\
+Postion: ({self.x}, {self.y})"
+
+class Warlock(Hero):
     """
     >>> warlock1 = Warlock("Gorath", "The Fiend", 10, [eldritch_blast], dagger, leather_armor, 1, 0, 0)
     >>> warlock2 = Warlock("Luna", "The Archfey", 12, [eldritch_blast], staff, cloth_armor, 1, 0, 0)
@@ -110,12 +217,12 @@ class Warlock:
     >>> warlock2.learn_spell(hex)
     >>> print(warlock2.get_spells())
     ['Eldritch Blast', 'Hex']
-    >>> warlock2.items.append(small_healing_potion)
+    >>> warlock2.inventory.append(small_healing_potion)
     >>> warlock2.use_item("Small Healing Potion")
     >>> print(warlock2.hp)
     10
     >>> warlock2.max_hp = 15
-    >>> warlock2.items.append(healing_potion)
+    >>> warlock2.inventory.append(healing_potion)
     >>> warlock2.use_item("Healing Potion")
     >>> print(warlock2.hp)
     15
@@ -152,39 +259,14 @@ class Warlock:
                 charisma: int = 0,
                 x: int = 0,
                 y: int = 0,
-                items: list[Item] = []
+                inventory: list[Item] = []
                 ):
-        self.name = name
+        super().__init__(name, hp, weapon, armor, level, experience, x, y, inventory)
         self.patron = patron
-        self.hp = hp
-        self.max_hp = hp
         self.spells = spells
-        self.weapon = weapon
-        self.armor = armor
-        self.level = level
-        self.experience = experience
         self.charisma = charisma
-        self.x = x
-        self.y = y
-        self.items = items
-
-    def __str__(self):
-        return self.name
     
-    def take_damage(self, damage: int):
-        damage -= self.armor.ap
-        if damage < 0:
-            damage = 0
-        self.hp -= damage
-        if self.hp < 0:
-            self.hp = 0
-    
-    def heal(self, amount: int):
-        self.hp += amount
-        if self.hp > self.max_hp:
-            self.hp = self.max_hp
-    
-    def cast_spell(self, spell_name, targets):
+    def cast_spell(self, spell_name: str, targets: list[Entity] | Entity):
         spells = self.get_spells()
         spell = None
         for i in range(len(spells)):
@@ -202,58 +284,17 @@ class Warlock:
                             target.take_damage(spell.damage + self.charisma)
                         case "heal":
                             target.heal(spell.damage + self.charisma)
-
-    def attack(self, target):
-        if math.dist((self.x, self.y), (target.x, target.y)) <= 1:
-            target.take_damage(self.weapon.damage)
-    
-    def use_item(self, item_name: str):
-        items = self.get_items()
-        item = None
-        for i in range(len(items)):
-            if item_name == items[i]:
-                item = self.items[i]
-        if item is not None:
-            if item.effect == "heal":
-                self.hp += item.value
-                if self.hp > self.max_hp:
-                    self.hp = self.max_hp
-                self.items.remove(item)
-    
-    def equip(self, item: Weapon | Armor):
-        if isinstance(item, Weapon):
-            self.weapon = item
-        elif isinstance(item, Armor):
-            self.armor = item
     
     def learn_spell(self, spell: Spell):
         if isinstance(spell, Spell):
             self.spells.append(spell)
-
-    def gain_experience(self, amount: int):
-        self.experience += amount
-        while self.experience >= 100:
-            self.level_up()
-            self.experience -= 100
-    
-    def level_up(self):
-        self.level += 1
-        self.max_hp += 3
-        self.hp = self.max_hp
-        self.charisma += 1
 
     def get_spells(self):
         spells: list[str] = []
         for spell in self.spells:
             spells.append(spell.name)
         return spells
-    
-    def get_items(self):
-        items: list[str] = []
-        for item in self.items:
-            items.append(item.name)
-        return items
-    
+
     def get_info(self):
         return f"\
 Name: {self.name}\n\
