@@ -95,6 +95,9 @@ class Warlock:
     >>> warlock1.cast_spell("Eldritch Blast", warlock2)
     >>> print(warlock2.hp)
     7
+    >>> warlock2.learn_spell(hex)
+    >>> print(warlock2.get_spells())
+    ['Eldritch Blast', 'Hex']
     """
     def __init__(
                 self,
@@ -125,7 +128,7 @@ class Warlock:
     def __str__(self):
         return self.name
     
-    def take_damage(self, damage):
+    def take_damage(self, damage: int):
         damage -= self.armor.ap
         if damage < 0:
             damage = 0
@@ -134,7 +137,7 @@ class Warlock:
             self.hp = 0
     
     def get_spells(self):
-        spells = []
+        spells: list[str] = []
         for spell in self.spells:
             spells.append(spell.name)
         return spells
@@ -153,13 +156,17 @@ class Warlock:
     def attack(self, target):
         target.take_damage(self.weapon.damage)
     
-    def equip(self, item):
+    def equip(self, item: Weapon | Armor):
         if isinstance(item, Weapon):
             self.weapon = item
         elif isinstance(item, Armor):
             self.armor = item
+    
+    def learn_spell(self, spell: Spell):
+        if isinstance(spell, Spell):
+            self.spells.append(spell)
 
-    def gain_experience(self, amount):
+    def gain_experience(self, amount: int):
         self.experience += amount
         while self.experience >= 100:
             self.level_up()
