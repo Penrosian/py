@@ -82,6 +82,15 @@ class Entity:
             self.hp = self.max_hp
 
 class Hero(Entity):
+    """
+    >>> hero = Hero("Arin", 15, dagger, leather_armor, 1, 0, 0, 0, [], 30)
+    >>> hero.walk(10, 10)
+    >>> print((hero.x, hero.y))
+    (10, 10)
+    >>> hero.walk(50, 50)
+    >>> print((hero.x, hero.y))
+    (10, 10)
+    """
     def __init__(self,
                  name: str = "",
                  hp: int = 10,
@@ -91,7 +100,8 @@ class Hero(Entity):
                  experience: int = 0,
                  x: int = 0,
                  y: int = 0,
-                 inventory: list[Item] = []
+                 inventory: list[Item] = [],
+                 speed: int = 30,
                  ):
         super().__init__(name, hp, x, y)
         self.weapon = weapon
@@ -99,6 +109,7 @@ class Hero(Entity):
         self.level = level
         self.experience = experience
         self.inventory = inventory
+        self.speed = speed
     
     def take_damage(self, damage: int):
         damage -= self.armor.ap
@@ -107,6 +118,12 @@ class Hero(Entity):
         self.hp -= damage
         if self.hp < 0:
             self.hp = 0
+    
+    def walk(self, x: int, y: int):
+        distance = math.dist((self.x, self.y), (x, y))
+        if distance <= self.speed:
+            self.x = x
+            self.y = y
     
     def use_item(self, item_name: str):
         items = self.get_items()
