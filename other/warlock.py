@@ -65,6 +65,7 @@ class Entity:
         self.max_hp = hp
         self.x = x
         self.y = y
+        self.isalive = True if hp > 0 else False
 
     def __str__(self):
         return self.name
@@ -75,11 +76,15 @@ class Entity:
         self.hp -= damage
         if self.hp < 0:
             self.hp = 0
+            print(f"{self.name} has died!")
+            self.isalive = False
     
     def heal(self, amount: int):
         self.hp += amount
         if self.hp > self.max_hp:
             self.hp = self.max_hp
+        if self.hp > 0:
+            self.isalive = True
 
 class Hero(Entity):
     """
@@ -88,6 +93,7 @@ class Hero(Entity):
     >>> print((hero.x, hero.y))
     (10, 10)
     >>> hero.walk(50, 50)
+    Destination is too far to walk in one turn.
     >>> print((hero.x, hero.y))
     (10, 10)
     """
@@ -118,12 +124,16 @@ class Hero(Entity):
         self.hp -= damage
         if self.hp < 0:
             self.hp = 0
+            print(f"{self.name} has died!")
+            self.isalive = False
     
     def walk(self, x: int, y: int):
         distance = math.dist((self.x, self.y), (x, y))
         if distance <= self.speed:
             self.x = x
             self.y = y
+        else:
+            print("Destination is too far to walk in one turn.")
     
     def use_item(self, item_name: str):
         items = self.get_items()
@@ -137,16 +147,22 @@ class Hero(Entity):
                 if self.hp > self.max_hp:
                     self.hp = self.max_hp
                 self.inventory.remove(item)
+        else:
+            print(f"No item named {item_name} found in inventory.")
     
     def equip(self, item: Weapon | Armor):
         if isinstance(item, Weapon):
             self.weapon = item
         elif isinstance(item, Armor):
             self.armor = item
+        else:
+            raise TypeError(f"Item must be a Weapon or Armor, not {type(item)}")
 
     def attack(self, target: Entity):
         if math.dist((self.x, self.y), (target.x, target.y)) <= 1:
             target.take_damage(self.weapon.damage)
+        else:
+            print("Target is out of range for melee attack.")
 
     def gain_experience(self, amount: int):
         self.experience += amount
@@ -158,7 +174,6 @@ class Hero(Entity):
         self.level += 1
         self.max_hp += 3
         self.hp = self.max_hp
-        self.charisma += 1
     
     def get_items(self):
         items: list[str] = []
@@ -174,7 +189,6 @@ Weapon: {self.weapon}\n\
 Armor: {self.armor}\n\
 Level: {self.level}\n\
 Experience: {self.experience}\n\
-Charisma: {self.charisma}\n\
 Postion: ({self.x}, {self.y})"
 
 class Warlock(Hero):
@@ -260,6 +274,7 @@ class Warlock(Hero):
     >>> print(warlock1.hp)
     23
     >>> warlock3.attack(warlock1)
+    Target is out of range for melee attack.
     >>> print(warlock1.hp)
     23
     """
@@ -301,16 +316,26 @@ class Warlock(Hero):
                             target.take_damage(spell.damage + self.charisma)
                         case "heal":
                             target.heal(spell.damage + self.charisma)
+        else:
+            print(f"Spell {spell_name} not found.")
     
     def learn_spell(self, spell: Spell):
         if isinstance(spell, Spell):
             self.spells.append(spell)
+        else:
+            raise TypeError(f"spell must be of type Spell, not {type(spell)}")
 
     def get_spells(self):
         spells: list[str] = []
         for spell in self.spells:
             spells.append(spell.name)
         return spells
+    
+    def level_up(self):
+        self.level += 1
+        self.max_hp += 3
+        self.hp = self.max_hp
+        self.charisma += 1
 
     def get_info(self):
         return f"\
