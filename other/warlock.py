@@ -1,4 +1,3 @@
-import doctest
 import math
 
 class Spell:
@@ -370,4 +369,5 @@ Charisma: {self.charisma}\n\
 Postion: ({self.x}, {self.y})"
 
 if __name__ == "__main__":
+    import doctest
     doctest.testmod()
