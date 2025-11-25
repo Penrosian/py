@@ -293,21 +293,20 @@ class Warlock(Hero):
     >>> print(warlock1.hp)
     23
     """
-    def __init__(
-                self,
-                name: str = "",
-                patron: str = "",
-                hp: int = 10,
-                spells: list[Spell] = [Spell("Eldritch Blast", 8, 120, "damage")],
-                weapon: Weapon = Weapon("Fists", 1),
-                armor: Armor = Armor("Cloth Armor", 0),
-                level: int = 1,
-                experience: int = 0,
-                charisma: int = 0,
-                x: int = 0,
-                y: int = 0,
-                inventory: list[Item] = []
-                ):
+    def __init__(self,
+                 name: str = "",
+                 patron: str = "",
+                 hp: int = 10,
+                 spells: list[Spell] = [Spell("Eldritch Blast", 8, 120, "damage")],
+                 weapon: Weapon = Weapon("Fists", 1),
+                 armor: Armor = Armor("Cloth Armor", 0),
+                 level: int = 1,
+                 experience: int = 0,
+                 charisma: int = 0,
+                 x: int = 0,
+                 y: int = 0,
+                 inventory: list[Item] = []
+                 ):
         super().__init__(name, hp, weapon, armor, level, experience, x, y, inventory)
         self.patron = patron
         self.spells = spells
