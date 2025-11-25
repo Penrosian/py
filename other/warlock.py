@@ -135,12 +135,11 @@ class Hero(Entity):
         else:
             print("Destination is too far to walk in one turn.")
     
+    def pickup_item(self, item: Item):
+        self.inventory.append(item)
+    
     def use_item(self, item_name: str):
-        items = self.get_items()
-        item = None
-        for i in range(len(items)):
-            if item_name == items[i]:
-                item = self.inventory[i]
+        item = self.find_item(item_name)
         if item is not None:
             if item.effect == "heal":
                 self.hp += item.value
@@ -150,13 +149,19 @@ class Hero(Entity):
         else:
             print(f"No item named {item_name} found in inventory.")
     
-    def equip(self, item: Weapon | Armor):
+    def equip(self, item_name: str):
+        item = self.find_item(item_name)
+        if item is None:
+            print(f"No item named {item_name} found in inventory.")
+            return
         if isinstance(item, Weapon):
             self.weapon = item
+            self.inventory.remove(item)
         elif isinstance(item, Armor):
             self.armor = item
+            self.inventory.remove(item)
         else:
-            raise TypeError(f"Item must be a Weapon or Armor, not {type(item)}")
+            print(f"Item {item_name} cannot be equipped.")
 
     def attack(self, target: Entity):
         if math.dist((self.x, self.y), (target.x, target.y)) <= 1:
@@ -180,6 +185,13 @@ class Hero(Entity):
         for item in self.inventory:
             items.append(item.name)
         return items
+    
+    def find_item(self, item_name: str):
+        items = self.get_items()
+        for i in range(len(items)):
+            if item_name == items[i]:
+                return self.inventory[i]
+        return None
     
     def get_info(self):
         return f"\
@@ -206,7 +218,8 @@ class Warlock(Hero):
     >>> warlock2.attack(warlock1)
     >>> print(warlock1.hp)
     5
-    >>> warlock1.equip(chainmail_armor)
+    >>> warlock1.pickup_item(chainmail_armor)
+    >>> warlock1.equip("Chainmail Armor")
     >>> print(warlock1.armor)
     Chainmail Armor
     >>> warlock2.attack(warlock1)
@@ -248,18 +261,18 @@ class Warlock(Hero):
     >>> warlock2.learn_spell(hex)
     >>> print(warlock2.get_spells())
     ['Eldritch Blast', 'Hex']
-    >>> warlock2.inventory.append(small_healing_potion)
+    >>> warlock2.pickup_item(small_healing_potion)
     >>> warlock2.use_item("Small Healing Potion")
     >>> print(warlock2.hp)
     10
     >>> warlock2.max_hp = 15
-    >>> warlock2.inventory.append(healing_potion)
+    >>> warlock2.pickup_item(healing_potion)
     >>> warlock2.use_item("Healing Potion")
     >>> print(warlock2.hp)
     15
     >>> print(warlock2.get_items())
     []
-    >>> warlock3 = Warlock("Mira", "The Great Old One", 8, [mass_cure_wounds, cure_wounds], dagger, cloth_armor, 1, 0, 0)
+    >>> warlock3 = Warlock("Mira", "The Great Old One", 8, [mass_cure_wounds], dagger, cloth_armor, 1, 0, 0)
     >>> warlock1.max_hp = 30
     >>> warlock1.hp = 13
     >>> warlock2.hp = 10
@@ -270,6 +283,9 @@ class Warlock(Hero):
     >>> print(warlock2.hp)
     15
     >>> warlock1.x = 3
+    >>> warlock3.learn_spell(cure_wounds)
+    >>> print(warlock3.get_spells())
+    ['Mass Cure Wounds', 'Cure Wounds']
     >>> warlock3.cast_spell("Cure Wounds", warlock1)
     >>> print(warlock1.hp)
     23
@@ -299,11 +315,7 @@ class Warlock(Hero):
         self.charisma = charisma
     
     def cast_spell(self, spell_name: str, targets: list[Entity] | Entity):
-        spells = self.get_spells()
-        spell = None
-        for i in range(len(spells)):
-            if spell_name == spells[i]:
-                spell = self.spells[i]
+        spell = self.get_spell(spell_name)
         if spell is not None:
             if not isinstance(targets, list):
                 targets = [targets]
@@ -330,6 +342,13 @@ class Warlock(Hero):
         for spell in self.spells:
             spells.append(spell.name)
         return spells
+    
+    def get_spell(self, spell_name: str):
+        spells = self.get_spells()
+        for i in range(len(spells)):
+            if spell_name == spells[i]:
+                return self.spells[i]
+        return None
     
     def level_up(self):
         self.level += 1
