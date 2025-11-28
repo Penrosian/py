@@ -54,9 +54,9 @@ leather_armor = Armor(name="Leather Armor", defence=1)
 cloth_armor = Armor(name="Cloth Armor", defence=0)
 chainmail_armor = Armor(name="Chainmail Armor", defence=3)
 
-small_healing_potion = Item("Small Healing Potion", "heal", 3)
-healing_potion = Item("Healing Potion", "heal", 7)
-big_healing_potion = Item("Big Healing Potion", "heal", 10)
+small_healing_potion = Item(name="Small Healing Potion", effect="heal", value=3)
+healing_potion = Item(name="Healing Potion", effect="heal", value=7)
+big_healing_potion = Item(name="Big Healing Potion", effect="heal", value=10)
 
 class Entity:
     def __init__(self,
