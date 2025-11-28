@@ -1,21 +1,22 @@
 import curses
 import sys
+from typing import Any
 
-def print(string, /, *args, end="\n"):
-    with open("/tmp/debug_pipe", "a") as f:
+def print(string: Any, /, *args: Any, end: str = "\n"):
+    with open(file="/tmp/debug_pipe", mode="a") as f:
         f.write(str(string))
         for s in args:
             f.write(" " + str(s))
         f.write(end)
         f.flush()
 
-with open(sys.argv[1], "r") as f:
+with open(file=sys.argv[1], mode="r") as f:
     sylveon = f.readlines()
     for i in range(len(sylveon)):
         sylveon[i] = sylveon[i].rstrip("\n")
         sylveon[i] = "$1" + sylveon[i]
 
-def main(stdscr):
+def main(stdscr: curses.window):
     print("============")
     stdscr.clear()
 
@@ -36,7 +37,7 @@ def main(stdscr):
     curs_y = 0
     try:
         for s in sylveon:
-            segments = s.split("$")
+            segments = s.split(sep="$")
             print(segments)
             for segment in segments:
                 if segment == "":
