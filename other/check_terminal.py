@@ -64,7 +64,7 @@ def main(stdscr: curses.window) -> None:
     win2.refresh()
 
     stdscr.addstr(22, 25, "Enter a character to quit: ")
-    _ = stdscr.getch()
+    stdscr.getch()
 
 
 if __name__ == "__main__":

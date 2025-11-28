@@ -383,4 +383,4 @@ Postion: ({self.x}, {self.y})"
 
 if __name__ == "__main__":
     import doctest
-    _ = doctest.testmod()
+    doctest.testmod()
