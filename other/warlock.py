@@ -1,52 +1,58 @@
 import math
+from typing import Literal, final, override
 
+class Item:
+    def __init__(self, name: str, effect: Literal["heal", "equip"], value: int):
+        self.name: str = name
+        self.effect: Literal["heal", "equip"] = effect
+        self.value: int = value
+    
+    @override
+    def __str__(self):
+        return self.name
+
+@final
 class Spell:
-    def __init__(self, name: str, damage: int, range: int, effect: str, max_targets: int = 1):
+    def __init__(self, name: str, damage: int, range: int, effect: Literal["damage", "heal"], max_targets: int = 1):
         self.name = name
         self.damage = damage
         self.range = range
-        self.effect = effect
+        self.effect: Literal["damage", "heal"] = effect
         self.max_targets = max_targets
     
+    @override
     def __str__(self):
         return self.name
 
-eldritch_blast = Spell("Eldritch Blast", 8, 120, "damage")
-hex = Spell("Hex", 4, 90, "damage")
-cure_wounds = Spell("Cure Wounds", 6, 1, "heal")
-mass_cure_wounds = Spell("Mass Cure Wounds", 10, 60, "heal", 6)
+eldritch_blast = Spell(name="Eldritch Blast", damage=8, range=120, effect="damage")
+hex = Spell(name="Hex", damage=4, range=90, effect="damage")
+cure_wounds = Spell(name="Cure Wounds", damage=6, range=1, effect="heal")
+mass_cure_wounds = Spell(name="Mass Cure Wounds", damage=10, range=60, effect="heal", max_targets=6)
 
-class Weapon:
+@final
+class Weapon(Item):
     def __init__(self, name: str, damage: int):
-        self.name = name
-        self.damage = damage
+        super().__init__(name=name, effect="equip", value=damage)
     
+    @override
     def __str__(self):
         return self.name
 
-dagger = Weapon("Dagger", 4)
-staff = Weapon("Staff", 6)
+dagger = Weapon(name="Dagger", damage=4)
+staff = Weapon(name="Staff", damage=6)
 
-class Armor:
-    def __init__(self, name: str, ap: int):
-        self.name = name
-        self.ap = ap
+@final
+class Armor(Item):
+    def __init__(self, name: str, defence: int):
+        super().__init__(name=name, effect="equip", value=defence)
     
+    @override
     def __str__(self):
         return self.name
 
-leather_armor = Armor("Leather Armor", 1)
-cloth_armor = Armor("Cloth Armor", 0)
-chainmail_armor = Armor("Chainmail Armor", 3)
-
-class Item:
-    def __init__(self, name: str, effect: str, value: int):
-        self.name = name
-        self.effect = effect
-        self.value = value
-    
-    def __str__(self):
-        return self.name
+leather_armor = Armor(name="Leather Armor", defence=1)
+cloth_armor = Armor(name="Cloth Armor", defence=0)
+chainmail_armor = Armor(name="Chainmail Armor", defence=3)
 
 small_healing_potion = Item("Small Healing Potion", "heal", 3)
 healing_potion = Item("Healing Potion", "heal", 7)
@@ -59,13 +65,14 @@ class Entity:
                  x: int = 0,
                  y: int = 0
                  ):
-        self.name = name
-        self.hp = hp
-        self.max_hp = hp
-        self.x = x
-        self.y = y
-        self.isalive = True if hp > 0 else False
+        self.name: str = name
+        self.hp: int = hp
+        self.max_hp: int = hp
+        self.x: int = x
+        self.y: int = y
+        self.isalive: bool = True if hp > 0 else False
 
+    @override
     def __str__(self):
         return self.name
     
@@ -99,8 +106,8 @@ class Hero(Entity):
     def __init__(self,
                  name: str = "",
                  hp: int = 10,
-                 weapon: Weapon = Weapon("Fists", 1),
-                 armor: Armor = Armor("Cloth Armor", 0),
+                 weapon: Weapon = Weapon(name="Fists", damage=1),
+                 armor: Armor = Armor(name="Cloth Armor", defence=0),
                  level: int = 1,
                  experience: int = 0,
                  x: int = 0,
@@ -109,15 +116,22 @@ class Hero(Entity):
                  speed: int = 30,
                  ):
         super().__init__(name, hp, x, y)
-        self.weapon = weapon
-        self.armor = armor
-        self.level = level
-        self.experience = experience
-        self.inventory = inventory
-        self.speed = speed
+        self.weapon: Weapon = weapon
+        self.armor: Armor = armor
+        self.level: int = level
+        self.experience: int = experience
+        self.inventory: list[Item] = inventory
+        self.speed: int = speed
+
+        self.hp: int
+        self.max_hp: int
+        self.x: int
+        self.y: int
+        self.isalive: bool
     
+    @override
     def take_damage(self, damage: int):
-        damage -= self.armor.ap
+        damage -= self.armor.value
         if damage < 0:
             damage = 0
         self.hp -= damage
@@ -164,7 +178,7 @@ class Hero(Entity):
 
     def attack(self, target: Entity):
         if math.dist((self.x, self.y), (target.x, target.y)) <= 1:
-            target.take_damage(self.weapon.damage)
+            target.take_damage(damage=self.weapon.value)
         else:
             print("Target is out of range for melee attack.")
 
@@ -196,12 +210,13 @@ class Hero(Entity):
         return f"\
 Name: {self.name}\n\
 HP: {self.hp}\n\
-Weapon: {self.weapon}\n\
+weapon: {self.weapon}\n\
 Armor: {self.armor}\n\
 Level: {self.level}\n\
 Experience: {self.experience}\n\
 Postion: ({self.x}, {self.y})"
 
+@final
 class Warlock(Hero):
     """
     >>> warlock1 = Warlock("Gorath", "The Fiend", 10, [eldritch_blast], dagger, leather_armor, 1, 0, 0)
@@ -297,9 +312,9 @@ class Warlock(Hero):
                  name: str = "",
                  patron: str = "",
                  hp: int = 10,
-                 spells: list[Spell] = [Spell("Eldritch Blast", 8, 120, "damage")],
-                 weapon: Weapon = Weapon("Fists", 1),
-                 armor: Armor = Armor("Cloth Armor", 0),
+                 spells: list[Spell] = [Spell(name="Eldritch Blast", damage=8, range=120, effect="damage")],
+                 weapon: Weapon = Weapon(name="Fists", damage=1),
+                 armor: Armor = Armor(name="Cloth Armor", defence=0),
                  level: int = 1,
                  experience: int = 0,
                  charisma: int = 0,
@@ -323,17 +338,14 @@ class Warlock(Hero):
                 if math.dist((self.x, self.y), (target.x, target.y)) <= spell.range:
                     match spell.effect:
                         case "damage":
-                            target.take_damage(spell.damage + self.charisma)
+                            target.take_damage(damage=spell.damage + self.charisma)
                         case "heal":
-                            target.heal(spell.damage + self.charisma)
+                            target.heal(amount=spell.damage + self.charisma)
         else:
             print(f"Spell {spell_name} not found.")
     
     def learn_spell(self, spell: Spell):
-        if isinstance(spell, Spell):
-            self.spells.append(spell)
-        else:
-            raise TypeError(f"spell must be of type Spell, not {type(spell)}")
+        self.spells.append(spell)
 
     def get_spells(self):
         spells: list[str] = []
@@ -348,19 +360,21 @@ class Warlock(Hero):
                 return self.spells[i]
         return None
     
+    @override
     def level_up(self):
         self.level += 1
         self.max_hp += 3
         self.hp = self.max_hp
         self.charisma += 1
 
+    @override
     def get_info(self):
         return f"\
 Name: {self.name}\n\
 Patron: {self.patron}\n\
 HP: {self.hp}\n\
 Spells: {self.get_spells()}\n\
-Weapon: {self.weapon}\n\
+weapon: {self.weapon}\n\
 Armor: {self.armor}\n\
 Level: {self.level}\n\
 Experience: {self.experience}\n\
@@ -369,4 +383,4 @@ Postion: ({self.x}, {self.y})"
 
 if __name__ == "__main__":
     import doctest
-    doctest.testmod()
+    _ = doctest.testmod()

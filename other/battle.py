@@ -1,5 +1,5 @@
-import warlock
-import Beholder
+from . import warlock
+from . import Beholder
 
 ben = warlock.Warlock(name="Ben",
                       patron="The Great Old One",
@@ -9,5 +9,5 @@ ben = warlock.Warlock(name="Ben",
                       armor=warlock.leather_armor)
 bhol = Beholder.beholder()
 
-ben.attack(bhol) # type: ignore
+ben.attack(target=bhol) # pyright:ignore[reportArgumentType]
 print(f"Beholder HP after attack: {bhol.hp}")
